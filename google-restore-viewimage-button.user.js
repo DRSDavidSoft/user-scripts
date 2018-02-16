@@ -1,6 +1,7 @@
 // ==UserScript==
 // @name           Don't track me Google
-// @namespace      David Refoua
+// @namespace      David Refoua <www.Refoua.me>
+// @author         David Refoua
 // @description    Restores the 'View Image' button on Google Image search. Beta, report back issues!
 // @include        http://*.google.tld/*isch*
 // @include        https://*.google.tld/*isch*
