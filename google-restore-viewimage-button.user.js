@@ -9,7 +9,8 @@
 // @run-at         document-start
 // @updateURL      https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/google-restore-viewimage-button.user.js
 // @downloadURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/google-restore-viewimage-button.user.js
-// @version        0.1.1-beta
+// @version        0.1.2-beta
+// @license        MIT License
 // ==/UserScript==
 
 var resetViewBtn = (function() {
