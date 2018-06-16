@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         Soft98 Ad-unblocker
+// @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.1b
+// @version      0.2b
 // @description  Removes Soft98.ir's annoying message to disable adblocker.
-// @run-at:      document-start
+// @run-at:      document-body
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
 // @downloadURL  https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
 // @match        https://soft98.ir/*
