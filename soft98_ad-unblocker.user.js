@@ -30,7 +30,7 @@
 
 		/** Define a list of elements that we need to interact with */
 		links:  ".download-list-link, .card-title-link, .card-footer .btn-success",
-		ads:    ".adx, .adx-image, .adx > *, .adxb, .adx__inner, .adx-link, .adx-download",
+		ads:    ".adx, .adx-image, .adx > *, .adxb, .adx__inner, .adx-link, .adx-download, #kaprila_soft98_ir_related",
 
 		/** Hold the original `href` attribute */
 		_href:  [ ],
