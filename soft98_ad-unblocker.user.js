@@ -120,7 +120,7 @@
 			if ( typeof $ == 'function' ) { $('.shit').parent().filter('.card').wrap(contentWrapper); }
 
 			// TODO: I'll probably come up with something a bit more clever in the next version.
-			if ( typeof $ == 'function' ) { $('.shit, .shit *').css({'opacity': '0', 'overflow': 'hidden', 'max-width': '2px', 'max-height': '2px', 'padding': '0', 'margin': '0'}); }
+			if ( typeof $ == 'function' ) { $('.shit, .shit *').css({'opacity': '0', 'overflow': 'hidden', 'border': '0', 'max-width': '2px', 'max-height': '2px', 'padding': '0', 'margin': '0'}); }
 
 			// TODO: merge these lines
 			if ( typeof $ == 'function' ) { $('.shit, .shit *').attr('href', '#').attr('src', '').on('click dblclick contextmenu', function(e) { e.preventDefault(); }); }
