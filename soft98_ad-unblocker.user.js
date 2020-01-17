@@ -128,7 +128,7 @@
 
 			if ( typeof $ == 'function' ) { $('.shit').css({'opacity': '0', 'transform': 'scale(0)'}).filter(':not(:has(.shit))').css({'display': 'inline-block'}); }
 
-			if ( typeof $ == 'function' ) { $('.container').filter(this.ads).add('.shit .card, #kaprila_soft98_ir_related').css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); $('.shit + .card').css({'margin-top': '0'}); }
+			if ( typeof $ == 'function' ) { $('.container').filter(this.ads).add('.shit .card').css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); $('.shit + .card').css({'margin-top': '0'}); $("#kaprila_soft98_ir_related").remove(); }
 
 			if ( typeof $ == 'function' ) { $('.nav-item:contains(تبلیغات), .download-list-item:has(a[href*=kaprila]), .download-list-item-buysellads').remove(); }
 
