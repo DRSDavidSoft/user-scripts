@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.4b
+// @version      0.5b
 // @description  Removes Soft98.ir's annoying message to disable adblocker.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -15,7 +15,7 @@
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA4
+ * Coded by: David@Refoua.me – Version BETA5
  *
  */
 
@@ -128,7 +128,9 @@
 
 			if ( typeof $ == 'function' ) { $('.shit').css({'opacity': '0', 'transform': 'scale(0)'}).filter(':not(:has(.shit))').css({'display': 'inline-block'}); }
 
-            if ( typeof $ == 'function' ) { $('.container').filter(this.ads).add('.shit .card').css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); $('.shit + .card').css({'margin-top': '0'}); }
+			if ( typeof $ == 'function' ) { $('.container').filter(this.ads).add('.shit .card, #kaprila_soft98_ir_related').css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); $('.shit + .card').css({'margin-top': '0'}); }
+
+			if ( typeof $ == 'function' ) { $('.nav-item:contains(تبلیغات), .download-list-item:has(a[href*=kaprila]), .download-list-item-buysellads').remove(); }
 
 			// TODO: merge these lines
 			if ( typeof $ == 'function' ) { $('.shit, .shit *').on('click dblclick contextmenu', function(e) { e.preventDefault(); }).filter("[href]").attr('href', '#'); }
@@ -226,7 +228,7 @@
 				}
 
 			})
-			
+
 		},
 
 		/** We keep a track of the `document` methods in here */
@@ -253,7 +255,7 @@
 
 			/** Find a reference to a document */
 			var original = ({}).constructor.getPrototypeOf(document);
-			
+
 			/** my approach is to copy original methods from the new document constructor */
 			for ( var i in this.handles.list ) {
 
