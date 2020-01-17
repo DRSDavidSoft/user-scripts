@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.3b
+// @version      0.4b
 // @description  Removes Soft98.ir's annoying message to disable adblocker.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -15,7 +15,7 @@
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA3
+ * Coded by: David@Refoua.me – Version BETA4
  *
  */
 
@@ -26,11 +26,11 @@
 	// I have commented my approach as a challenge for Soft98
 	// which means a new challenge for me once they solve it.
 
-	var unblocker = {
+	const unblocker = {
 
 		/** Define a list of elements that we need to interact with */
 		links:  ".download-list-link, .card-title-link, .card-footer .btn-success",
-		ads:    ".adx, .adx-image, .adx > *, .adxb, .adx__inner, .adx-link, .adx-download, #kaprila_soft98_ir_related",
+		ads:	".a1d2x, .a1d2x-image, .a1d2x__inner, #a1d2x-header, .a1d2x-sidebar, .adx, .adx-image, .adx > *, .adxb, .adx__inner, .adx-link, .adx-download, #kaprila_soft98_ir_related",
 
 		/** Hold the original `href` attribute */
 		_href:  [ ],
@@ -45,7 +45,7 @@
 			 * First things first, we need to restore the idiot's mistakes
 			 * (e.g. the sad attempts to sabotage my script)
 			 */
-			
+
 			// This is a clever way to bypass Soft98's way to override global methods
 			this.resetHandles();
 
@@ -60,7 +60,6 @@
 			this._shits = _ads;
 
 			var _links = this.getElements(this.links);
-			//console.log(_links);
 
 			/** Save the links to the happiness */
 			for (var s in _links) if ( _links.hasOwnProperty(s) ) {
@@ -117,13 +116,20 @@
 
 			}
 
+			var emptyImg = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
+				minWidth = 15, minHeight = 15;
+
 			if ( typeof $ == 'function' ) { $('.shit').parent().filter('.card').wrap(contentWrapper); }
 
+			// if ( typeof $ == 'function' ) { $('.shit, .shit *').filter("img").attr('src', emptyImg).css({'min-width': (minWidth + 1) + 'px', 'min-height': (minHeight + 1) + 'px'}); }
+
 			// TODO: I'll probably come up with something a bit more clever in the next version.
-			if ( typeof $ == 'function' ) { $('.shit, .shit *').css({'opacity': '0', 'overflow': 'hidden', 'border': '0', 'max-width': '2px', 'max-height': '2px', 'padding': '0', 'margin': '0'}); }
+			if ( typeof $ == 'function' ) { $('.shit, .shit *').css({'overflow': 'hidden', 'border': '0', /*'max-width': (minWidth + 5) + 'px', 'max-height': (minHeight + 5) + 'px',*/ 'padding': '0', 'margin': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); }
+
+			if ( typeof $ == 'function' ) { $('.shit').css({'opacity': '0', 'transform': 'scale(0)'}); }
 
 			// TODO: merge these lines
-			if ( typeof $ == 'function' ) { $('.shit, .shit *').attr('href', '#').attr('src', '').on('click dblclick contextmenu', function(e) { e.preventDefault(); }); }
+			if ( typeof $ == 'function' ) { $('.shit, .shit *').attr('href', '#').on('click dblclick contextmenu', function(e) { e.preventDefault(); }); }
 
 		},
 
@@ -132,15 +138,15 @@
 			// TODO: remove this call
 			this.resetHandles();
 
-			// Sorry, but I couldn't help myself!!
+			// Sorry, but I couldn't help myself
 			document.getElementById('logo-link').style.backgroundImage = 'url(https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png)';
 
 			// Restore health to the link victims
 			for (var i in victims) if ( victims.hasOwnProperty(i) ) {
-				var poorChild = victims[i], origLocation = poorChild.pop();
+				var poorChild = victims[i], origLocation = poorChild[1];
 
 				// Undo Soft98's cruel violence to the poor links
-				var fixedLink = poorChild.shift();
+				var fixedLink = poorChild[0];
 				fixedLink.setAttribute('data-toggle', 'freedom');
 				$(fixedLink).off('click').attr('href', origLocation);
 
@@ -161,13 +167,14 @@
 
 			console.clear();
 
-			var shit = 'Zulla, Kaprila'.split(','),
+			var shit = 'Soft98-Ads'.split(','),
 				css = 'font-size: 200%; font-family: sans-serif; padding: 0 20px;'
 					+ 'background-color: #0097e6; color: #f5f6fa;'
-					+ 'text-shadow: 1px 1px 0 rgba(0,0,0, .5);';
+					+ 'text-shadow: 1px 1px 0 rgba(0,0,0, .5);'
+					+ 'border-radius: 1em;';
 
 			for ( var i in shit ) {
-				console.info( `%cAnti-${shit[i].trim()} is enabled!`, css );
+				console.info( `%c${shit[i].trim()} fucker is enabled!`, css );
 			}
 
 			console.log("%cAll Pirates, Come Aboard!", 'font-weight: bold; color: blue');
@@ -179,8 +186,11 @@
 		/** Helper function to check Soft98 traps */
 		trapCheck: function(nodeList) {
 
+			console.clear();
+
 			// Call this like:
 			// unblocker.trapCheck(unblocker._shits);
+			// var u = $(document).data("fucker"), r = u.trapCheck(u._shits);
 			$(nodeList).each(function() {
 
 				var $obj = $(this),
@@ -191,11 +201,17 @@
 
 				if ($obj.is(":hidden")) trips.push("was hidden");
 				if (left < 0 || left > $(window).width()) trips.push("outside screen");
-				if (-1 !== $obj.css("visibility").indexOf("hidden")) trips.push("not visible");
-				if ($obj.width() < 1) trips.push("small width");
-				if ($obj.height() < 1) trips.push("small height");
-				if (css && -1 !== css.indexOf("adguard")) trips.push("no adguard");
-				if (!$.trim($obj.html())) trips.push("no content");
+				//if (-1 !== $obj.css("visibility").indexOf("hidden")) trips.push("not visible");
+				if (-1 !== $obj.css("visibility").search(/hidden|collapse/)) trips.push("not visible");
+				if (-1 === $obj.css("transform").search(/none/)) trips.push("transform tripped");
+				if ($obj.css("opacity") < 1) trips.push("opacity tripped");
+				if ($obj.width() < 15) trips.push("small width");
+				if ($obj.height() < 15) trips.push("small height");
+				// if (css && -1 !== css.indexOf("adguard")) trips.push("adguard detected");
+				if (-1 !== (String($obj.css("content")) + $obj.attr("style")).search(/adguard/)) trips.push("adguard detected");
+				if ($obj.is("img") && !$obj.attr("src")) trips.push("source-less image");
+				// if (!$.trim($obj.html())) trips.push("no content");
+				if (!$obj.is("img") && !$obj.is("iframe") && !$.trim($obj.html())) trips.push("no content");
 
 				if ( trips.length > 0 ) {
 					// Group the tripped warnings
@@ -296,6 +312,7 @@
 	// Start the chaos
 	unblocker.init();
 
-	//window.unblocker = unblocker;
+	// Attach the unblocker handle to the global namespace... using a funny name ;)
+	$(document).data("fucker", unblocker);
 
 })();
