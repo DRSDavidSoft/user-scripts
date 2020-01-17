@@ -111,13 +111,13 @@
 				//if ( shitNode && shitNode.parentNode )
 				//	shitNode.parentElement.removeChild(shitNode);
 
-				if ( shitNode && typeof $ == 'function' )
+				if ( shitNode && typeof $ == 'function' && !$(shitNode).is('img') )
 				{ $(shitNode).wrapInner(contentWrapper); }
 
 			}
 
 			var emptyImg = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
-				minWidth = 15, minHeight = 15;
+				minWidth = 15, minHeight = 15; // cat & mouse (cat = me, mouse = soft98)
 
 			if ( typeof $ == 'function' ) { $('.shit').parent().filter('.card').wrap(contentWrapper); }
 
@@ -126,10 +126,12 @@
 			// TODO: I'll probably come up with something a bit more clever in the next version.
 			if ( typeof $ == 'function' ) { $('.shit, .shit *').css({'overflow': 'hidden', 'border': '0', /*'max-width': (minWidth + 5) + 'px', 'max-height': (minHeight + 5) + 'px',*/ 'padding': '0', 'margin': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); }
 
-			if ( typeof $ == 'function' ) { $('.shit').css({'opacity': '0', 'transform': 'scale(0)'}); }
+			if ( typeof $ == 'function' ) { $('.shit').css({'opacity': '0', 'transform': 'scale(0)'}).filter(':not(:has(.shit))').css({'display': 'inline-block'}); }
+
+            if ( typeof $ == 'function' ) { $('.container').filter(this.ads).add('.shit .card').css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'}); $('.shit + .card').css({'margin-top': '0'}); }
 
 			// TODO: merge these lines
-			if ( typeof $ == 'function' ) { $('.shit, .shit *').attr('href', '#').on('click dblclick contextmenu', function(e) { e.preventDefault(); }); }
+			if ( typeof $ == 'function' ) { $('.shit, .shit *').on('click dblclick contextmenu', function(e) { e.preventDefault(); }).filter("[href]").attr('href', '#'); }
 
 		},
 
