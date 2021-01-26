@@ -94,6 +94,21 @@
         },
         {
             "description": "Unlocalize French and Germany",
+            "exampleUrl": "https://www.spotify.com/de/password-reset/",
+            "exampleResult": "https://www.spotify.com/us/password-reset/",
+            "error": null,
+            "includePattern": "^(.*\\.spotify\\..*)\\b(?:fr|de)\\b(.*)$",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "$1us$2",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [ "main_frame", "sub_frame", "stylesheet", "script", "image", "imageset", "object", "xmlhttprequest", "history", "other" ]
+        },
+        {
+            "description": "Unlocalize French and Germany",
             "exampleUrl": "https://connect.ubisoft.com/login?appId=test&lang=fr-FR&nextUrl=https:%2F%2Foverlay.ubisoft.com",
             "exampleResult": "https://connect.ubisoft.com/login?appId=test&lang=en-US&nextUrl=https:%2F%2Foverlay.ubisoft.com",
             "error": null,
