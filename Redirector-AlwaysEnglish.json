@@ -121,6 +121,21 @@
             "disabled": false,
             "grouped": false,
             "appliesTo": [ "main_frame", "sub_frame", "stylesheet", "script", "image", "imageset", "object", "xmlhttprequest", "history", "other" ]
+        },
+        {
+            "description": "Unlocalize Facebook",
+            "exampleUrl": "https://pt-br.facebook.com/FacebookPage/photos/the-example/",
+            "exampleResult": "https://www.facebook.com/FacebookPage/photos/the-example/",
+            "error": null,
+            "includePattern": "^(https?[:\\/]+)\\w{2,3}\\-\\w{2,3}(\\.facebook\\.com\\/.*)$",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "$1www$2",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [ "main_frame", "sub_frame", "stylesheet", "script", "image", "imageset", "object", "xmlhttprequest", "history", "other" ]
         }
     ]
 }
