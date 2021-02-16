@@ -1,6 +1,6 @@
 {
     "createdBy": "Redirector v3.5.3",
-    "createdAt": "2020-12-24T23:51:03.765Z",
+    "createdAt": "2021-02-16T10:57:30.978Z",
     "redirects": [
         {
             "description": "PHP Manual Always English",
@@ -131,6 +131,36 @@
             "excludePattern": "",
             "patternDesc": "",
             "redirectUrl": "$1www$2",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [ "main_frame", "sub_frame", "stylesheet", "script", "image", "imageset", "object", "xmlhttprequest", "history", "other" ]
+        },
+        {
+            "description": "Unlocalize subdomains",
+            "exampleUrl": "https://de.aliexpress.com/wholesale?catId=0&initiative_id=example&SearchText=test",
+            "exampleResult": "https://www.aliexpress.com/wholesale?catId=0&initiative_id=example&SearchText=test",
+            "error": null,
+            "includePattern": "^(https?:\\/+)(de|fr)(\\.(?:aliexpress)\\.[\\w\\-\\.]+.*)$",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "$1www$3",
+            "patternType": "R",
+            "processMatches": "noProcessing",
+            "disabled": false,
+            "grouped": false,
+            "appliesTo": [ "main_frame", "sub_frame", "stylesheet", "script", "image", "imageset", "object", "xmlhttprequest", "history", "other" ]
+        },
+        {
+            "description": "Unlocalize TLDs",
+            "exampleUrl": "https://www.pinterest.fr/ideas",
+            "exampleResult": "https://www.pinterest.com/ideas",
+            "error": null,
+            "includePattern": "^(https?:\\/+)([\\w\\-\\.]*\\b(?:pinterest)\\.)(de|fr)(\\/.*)$",
+            "excludePattern": "",
+            "patternDesc": "",
+            "redirectUrl": "$1$2com$4",
             "patternType": "R",
             "processMatches": "noProcessing",
             "disabled": false,
