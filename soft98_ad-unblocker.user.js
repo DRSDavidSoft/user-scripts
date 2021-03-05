@@ -51,36 +51,36 @@
 
 			// console.log(document.querySelectorAll('body'));
 
-			var found = false;
+            var found = false;
 
-			if ( typeof $ == 'function' ) {
-				var class_names = { 'img':'', 'a':'' };
-				var $header_ad = $("#logo.col-lg+div.col-lg a img"), $parent = $header_ad.parent("a");
-				if ($header_ad.length > 0 && $parent.length > 0) {
-					$header_ad.add($parent).each(function() {
-						var classes = $(this).prop("classList"), tag = this.tagName.toLowerCase();
-						for (var i in classes) if (classes.hasOwnProperty(i) ) {
-							if (tag == 'img' && classes[i].match(/\b\w+\-image\b/i)) class_names[tag] = classes[i];
-							if (tag == 'a'   && classes[i].match(/\b\w+\-link\b/i))  class_names[tag] = classes[i];
-							// class_names.indexOf(classes[i]) === -1) class_names.push(classes[i]);
-						}
-					});
-					// console.log(class_names);
-				}
-				if ( class_names.img.length > 0 && class_names.a.length > 0 ) {
-					var ad_img = class_names.img.match(/^(?<name>.+)\-image$/i),
-						ad_link = class_names.a.match(/^(?<name>.+)\-link$/i);
-					if ( ad_img && ad_link && ad_img.groups['name'] === ad_link.groups['name'] ) {
-						var ad_class = ad_img.groups['name'];
-						this.ads = this.ads.replace(new RegExp('a1d2x', 'g'), ad_class);
-						found = true;
-					}
-				}
-			}
+            if ( typeof $ == 'function' ) {
+                var class_names = { 'img':'', 'a':'' };
+                var $header_ad = $("#logo.col-lg+div.col-lg a img"), $parent = $header_ad.parent("a");
+                if ($header_ad.length > 0 && $parent.length > 0) {
+                    $header_ad.add($parent).each(function() {
+                        var classes = $(this).prop("classList"), tag = this.tagName.toLowerCase();
+                        for (var i in classes) if (classes.hasOwnProperty(i) ) {
+                            if (tag == 'img' && classes[i].match(/\b\w+\-image\b/i)) class_names[tag] = classes[i];
+                            if (tag == 'a'   && classes[i].match(/\b\w+\-link\b/i))  class_names[tag] = classes[i];
+                            // class_names.indexOf(classes[i]) === -1) class_names.push(classes[i]);
+                        }
+                    });
+                    // console.log(class_names);
+                }
+                if ( class_names.img.length > 0 && class_names.a.length > 0 ) {
+                    var ad_img = class_names.img.match(/^(?<name>.+)\-image$/i),
+                        ad_link = class_names.a.match(/^(?<name>.+)\-link$/i);
+                    if ( ad_img && ad_link && ad_img.groups['name'] === ad_link.groups['name'] ) {
+                        var ad_class = ad_img.groups['name'];
+                        this.ads = this.ads.replace(new RegExp('a1d2x', 'g'), ad_class);
+                        found = true;
+                    }
+                }
+            }
 
 			this.brag();
 
-			if (!found) console.error("Could not find the ads class.");
+            if (!found) console.error("Could not find the ads class.");
 
 			var _ads = this.getElements(this.ads);
 			//console.log(_ads);
@@ -119,46 +119,46 @@
 
 		},
 
-		findRoot: function(nodes) {
-			var roots = $();
+        findRoot: function(nodes) {
+            var roots = $();
 
-			$(nodes).each(function() {
-				var $this = $(this);
-				while ( $this.parent().length > 0 && ( $this.parent().is(this._ads) || $this.parents("#sidebar .card").length > 0 ) ) $this = $this.parent();
-				if ( roots.has($this).length == 0 ) roots = roots.add($this);
-			});
+            $(nodes).each(function() {
+                var $this = $(this);
+                while ( $this.parent().length > 0 && ( $this.parent().is(this._ads) || $this.parents("#sidebar .card").length > 0 ) ) $this = $this.parent();
+                if ( roots.has($this).length == 0 ) roots = roots.add($this);
+            });
 
-			return roots;
-		},
+            return roots;
+        },
 
 		shitRemover: function(nodes) {
 
-			if ( typeof $ != 'function' ) return;
+            if ( typeof $ != 'function' ) return;
 
-			$('.nav-item').each(function() {
-				var isAds = false;
-				$(this).find('.nav-link').each(function() {
-					if ( $(this).text().replace(/ـ/g, '').indexOf('تبلیغ') !== -1 )
-						isAds = true;
-				});
-				if (isAds) $(this).remove();
-			});
+            $('.nav-item').each(function() {
+                var isAds = false;
+                $(this).find('.nav-link').each(function() {
+                    if ( $(this).text().replace(/ـ/g, '').indexOf('تبلیغ') !== -1 )
+                        isAds = true;
+                });
+                if (isAds) $(this).remove();
+            });
 
-			$('.download-list-item:has(a[href*=kaprila]), .download-list-item-buysellads, #kaprila_soft98_ir_related, #footer-bitcoin').remove();
+            $('.download-list-item:has(a[href*=kaprila]), .download-list-item-buysellads, #kaprila_soft98_ir_related, #footer-bitcoin').remove();
 
-			var _hClass = "shit";
+            var _hClass = "shit";
 
 			var contentWrapper = `<span class="${_hClass}"></span>`,
-				shitRoots = this.findRoot(nodes)
-				.filter(function(i){ return $(this).parents('.'+_hClass).length === 0; });
+                shitRoots = this.findRoot(nodes)
+                .filter(function(i){ return $(this).parents('.'+_hClass).length === 0; });
 
-			console.log(shitRoots);
+            console.log(shitRoots);
 
-			shitRoots.filter('.card').siblings('hr').remove();
-			// shitRoots.wrap(contentWrapper);
-			shitRoots.remove();
+            shitRoots.filter('.card').siblings('hr').remove();
+            // shitRoots.wrap(contentWrapper);
+            shitRoots.remove();
 
-			var shits = $('.'+_hClass).children().addBack();
+            var shits = $('.'+_hClass).children().addBack();
 
 			var emptyImg = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 				minWidth = 15, minHeight = 15; // cat & mouse (cat = me, mouse = soft98)
@@ -169,7 +169,7 @@
 
 			// $('.'+_hClass).css({'opacity': '0', 'transform': 'scale(0)'}).css({'display': 'inline-block'});
 
-			// $(`.${_hClass} card`).css({'margin-top': '0'});
+            // $(`.${_hClass} card`).css({'margin-top': '0'});
 
 			// $('.'+_hClass).css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'});
 
