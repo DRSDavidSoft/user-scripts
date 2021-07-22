@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.6b
+// @version      0.7b
 // @description  Removes Soft98.ir's annoying message to disable adblocker.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -15,7 +15,7 @@
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA6
+ * Coded by: David@Refoua.me – Version BETA7
  *
  */
 
@@ -30,7 +30,8 @@
 
 		/** Define a list of elements that we need to interact with */
 		links:  ".download-list-link, .card-title-link, .card-footer .btn-success",
-		ads:	".a1d2x, .a1d2x-image, .a1d2x__inner, #a1d2x-header, #a1d2x-special, .a1d2x-sidebar, .a1d2xb, .a1d2x-link, .a1d2x-download, #kaprila_soft98_ir_related",
+		ads:	"#kaprila_soft98_ir_related", // .a1d1x, .a1d1x-min, .a1d1x-image, .a1d1x__inner, #a1d1x-header, #a1d1x-special, .a1d1x-sidebar, .a1d1xb, .a1d1x-link, .a1d1x-download
+		a1d1x:	"a1d1x",
 
 		/** Hold the original `href` attribute */
 		_href:  [ ],
@@ -51,39 +52,42 @@
 
 			// console.log(document.querySelectorAll('body'));
 
-            var found = false;
+			var found = false;
 
-            if ( typeof $ == 'function' ) {
-                var class_names = { 'img':'', 'a':'' };
-                var $header_ad = $("#logo.col-lg+div.col-lg a img"), $parent = $header_ad.parent("a");
-                if ($header_ad.length > 0 && $parent.length > 0) {
-                    $header_ad.add($parent).each(function() {
-                        var classes = $(this).prop("classList"), tag = this.tagName.toLowerCase();
-                        for (var i in classes) if (classes.hasOwnProperty(i) ) {
-                            if (tag == 'img' && classes[i].match(/\b\w+\-image\b/i)) class_names[tag] = classes[i];
-                            if (tag == 'a'   && classes[i].match(/\b\w+\-link\b/i))  class_names[tag] = classes[i];
-                            // class_names.indexOf(classes[i]) === -1) class_names.push(classes[i]);
-                        }
-                    });
-                    // console.log(class_names);
-                }
-                if ( class_names.img.length > 0 && class_names.a.length > 0 ) {
-                    var ad_img = class_names.img.match(/^(?<name>.+)\-image$/i),
-                        ad_link = class_names.a.match(/^(?<name>.+)\-link$/i);
-                    if ( ad_img && ad_link && ad_img.groups['name'] === ad_link.groups['name'] ) {
-                        var ad_class = ad_img.groups['name'];
-                        this.ads = this.ads.replace(new RegExp('a1d2x', 'g'), ad_class);
-                        found = true;
-                    }
-                }
-            }
+			this.adjustKeyword();
 
-			this.brag();
-
-            if (!found) console.error("Could not find the ads class.");
+			if ( typeof $ == 'function' ) {
+				var class_names = { 'img':'', 'a':'' };
+				var $header_ad = $("#logo.col-lg+div.col-lg a img"), $parent = $header_ad.parent("a");
+				if ($header_ad.length > 0 && $parent.length > 0) {
+					$header_ad.add($parent).each(function() {
+						var classes = $(this).prop("classList"), tag = this.tagName.toLowerCase();
+						for (var i in classes) if (classes.hasOwnProperty(i) ) {
+							if (tag == 'img' && classes[i].match(/\b\w+\-image\b/i)) class_names[tag] = classes[i];
+							if (tag == 'a'   && classes[i].match(/\b\w+\-link\b/i))  class_names[tag] = classes[i];
+							// class_names.indexOf(classes[i]) === -1) class_names.push(classes[i]);
+						}
+					});
+					// console.log(class_names);
+				}
+				if ( class_names.img.length > 0 && class_names.a.length > 0 ) {
+					var ad_img = class_names.img.match(/^(?<name>.+)\-image$/i),
+						ad_link = class_names.a.match(/^(?<name>.+)\-link$/i);
+					if ( ad_img && ad_link && ad_img.groups['name'] === ad_link.groups['name'] ) {
+						var ad_class = ad_img.groups['name'];
+						this.ads = this.ads.replace(new RegExp(this.a1d1x, 'g'), ad_class);
+						found = true;
+					}
+				}
+			}
 
 			var _ads = this.getElements(this.ads);
-			//console.log(_ads);
+
+			if ( _ads.length > 0 ) found = true;
+
+			this.brag(!!found);
+
+			if (!found) console.error("Could not find the ads class.");
 
 			// Keep track of the shits (I mean ads)
 			this._shits = _ads;
@@ -119,46 +123,114 @@
 
 		},
 
-        findRoot: function(nodes) {
-            var roots = $();
+		findRoot: function(nodes) {
+			var roots = $();
 
-            $(nodes).each(function() {
-                var $this = $(this);
-                while ( $this.parent().length > 0 && ( $this.parent().is(this._ads) || $this.parents("#sidebar .card").length > 0 ) ) $this = $this.parent();
-                if ( roots.has($this).length == 0 ) roots = roots.add($this);
-            });
+			$(nodes).each(function() {
+				var $this = $(this);
+				while ( $this.parent().length > 0 && ( $this.parent().is(this._ads) || $this.parents("#sidebar .card").length > 0 ) ) $this = $this.parent();
+				if ( roots.has($this).length == 0 ) roots = roots.add($this);
+			});
 
-            return roots;
-        },
+			return roots;
+		},
+
+		adjustKeyword: function()
+		{
+
+			var regex = new RegExp( '(' + this.a1d1x.replace(/\d+/g, '\\d+') + ')', 'g' ),
+				found = [], lookup = [], _s = [];
+
+			var _all = document.querySelectorAll('[id],[class]'),
+				_strings = [];
+
+			for ( var i in _all ) if ( _all.hasOwnProperty(i) )
+			{
+				var _search = [];
+
+				if ( _all[i].id ) _search.push(_all[i].id);
+
+				if ( _all[i].className )
+				{
+					var cl = _all[i].className.split(/\s+/g);
+					for ( var j in cl ) _search.push(cl[j]);
+				}
+
+				for ( var x in _search ) if ( _search.hasOwnProperty(x) && _strings.indexOf(_search[x]) == -1 && !!_search[x] )
+					_strings.push(_search[x]);
+				
+			}
+
+			for ( var i in _strings ) if ( _strings.hasOwnProperty(i) )
+			{
+				var _m;
+
+				if ( _m = _strings[i].match(regex) )
+				{
+					if ( found.indexOf(_m[0]) == -1 ) found.push(_m[0]);
+					lookup.push(_strings[i]);
+				}
+			}
+
+			for ( var i in lookup ) if ( lookup.hasOwnProperty(i) )
+			{
+				var __s, __;
+
+				for ( var k in __s = ['.', '#'] ) if ( __s.hasOwnProperty(k) )
+				{
+					if ( !!document.querySelector( __ = __s[k] + lookup[i] ) && _s.indexOf(__) == -1 )
+						_s.push(__);
+				}
+
+			}
+
+			this.ads = this.ads.split(/,\s*/g);
+
+			for ( var i in _s ) if ( _s.hasOwnProperty(i) )
+				if ( this.ads.indexOf(_s[i]) == -1 ) this.ads.push(_s[i]);
+			
+			this.ads = this.ads.sort().join(', ');
+
+			if ( found.length > 0 )
+			{
+				this.a1d1x = found[0];
+				if ( found.length > 1 )
+				{
+					console.warn('%cWARNING: %cfound more than 1 keyword: ', 'font-weight: bold', '');
+					console.warn(found);
+				}
+			}
+
+		},
 
 		shitRemover: function(nodes) {
 
-            if ( typeof $ != 'function' ) return;
+			if ( typeof $ != 'function' ) return;
 
-            $('.nav-item').each(function() {
-                var isAds = false;
-                $(this).find('.nav-link').each(function() {
-                    if ( $(this).text().replace(/ـ/g, '').indexOf('تبلیغ') !== -1 )
-                        isAds = true;
-                });
-                if (isAds) $(this).remove();
-            });
+			$('.nav-item').each(function() {
+				var isAds = false;
+				$(this).find('.nav-link').each(function() {
+					if ( $(this).text().replace(/ـ/g, '').indexOf('تبلیغ') !== -1 )
+						isAds = true;
+				});
+				if (isAds) $(this).remove();
+			});
 
-            $('.download-list-item:has(a[href*=kaprila]), .download-list-item-buysellads, #kaprila_soft98_ir_related, #footer-bitcoin').remove();
+			$('.download-list-item:has(a[href*=kaprila]), .download-list-item-buysellads, #kaprila_soft98_ir_related, #footer-bitcoin').remove();
 
-            var _hClass = "shit";
+			var _hClass = "shit";
 
 			var contentWrapper = `<span class="${_hClass}"></span>`,
-                shitRoots = this.findRoot(nodes)
-                .filter(function(i){ return $(this).parents('.'+_hClass).length === 0; });
+				shitRoots = this.findRoot(nodes)
+				.filter(function(i){ return $(this).parents('.'+_hClass).length === 0; });
 
-            console.log(shitRoots);
+			console.log(shitRoots);
 
-            shitRoots.filter('.card').siblings('hr').remove();
-            // shitRoots.wrap(contentWrapper);
-            shitRoots.remove();
+			shitRoots.filter('.card').siblings('hr').remove();
+			// shitRoots.wrap(contentWrapper);
+			shitRoots.remove();
 
-            var shits = $('.'+_hClass).children().addBack();
+			var shits = $('.'+_hClass).children().addBack();
 
 			var emptyImg = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 				minWidth = 15, minHeight = 15; // cat & mouse (cat = me, mouse = soft98)
@@ -169,7 +241,7 @@
 
 			// $('.'+_hClass).css({'opacity': '0', 'transform': 'scale(0)'}).css({'display': 'inline-block'});
 
-            // $(`.${_hClass} card`).css({'margin-top': '0'});
+			// $(`.${_hClass} card`).css({'margin-top': '0'});
 
 			// $('.'+_hClass).css({'position': 'absolute', 'z-index': '-200', 'border': '0', 'color': 'transparent', 'background': 'transparent', 'box-shadow': 'none'});
 
@@ -181,9 +253,6 @@
 
 			// TODO: remove this call
 			this.resetHandles();
-
-			// Sorry, but I couldn't help myself
-			document.getElementById('logo-link').style.backgroundImage = 'url(https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png)';
 
 			// Restore health to the link victims
 			for (var i in victims) if ( victims.hasOwnProperty(i) ) {
@@ -207,23 +276,39 @@
 		},
 
 		// Send some messages to show off my abilities and mock Soft98
-		brag: function() {
+		brag: function(isSuccess) {
 
 			console.clear();
 
 			var shit = 'Soft98-Ads'.split(','),
 				css = 'font-size: 200%; font-family: sans-serif; padding: 0 20px;'
-					+ 'background-color: #0097e6; color: #f5f6fa;'
+					+ ( isSuccess ?
+						'background-color: #0097e6; color: #f5f6fa;' :
+						'background-color: #c0392b; color: #ecf0f1;' )
 					+ 'text-shadow: 1px 1px 0 rgba(0,0,0, .5);'
 					+ 'border-radius: 1em;';
 
+			var status = isSuccess ? 'is enabled!' : 'failed to work :('
+
 			for ( var i in shit ) {
-				console.info( `%c${shit[i].trim()} fucker is enabled!`, css );
+				console.info( `%c${shit[i].trim()} fucker ${status}`, css );
 			}
+
+			if ( !isSuccess ) return "till next time, suckers!";
+			
+			this.runAtReady( this.enhanceLogo.bind(this) );
 
 			console.log("%cAll Pirates, Come Aboard!", 'font-weight: bold; color: blue');
 
 			return "Be Happy ☺";
+
+		},
+
+		// I know, this logo is wayyy better than original.
+		enhanceLogo: function() {
+
+			// Sorry, but I couldn't help myself
+			document.getElementById('logo-link').style.backgroundImage = 'url(https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png)';
 
 		},
 
@@ -356,9 +441,9 @@
 	// Start the chaos
 	unblocker.init();
 
-	// Attach the unblocker handle to the global namespace... using a funny name ;)
-	$(document).data("fucker", unblocker);
+	// Attach the unblocker handle to the global namespace using an... interesting name
+	// $(document).data("fucker", unblocker);
 
-    // document.fucker = unblocker;
+	// document.fucker = unblocker;
 
 })();
