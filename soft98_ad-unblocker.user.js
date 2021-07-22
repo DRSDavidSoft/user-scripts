@@ -128,7 +128,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			/**
 			 * Restore the happniess now
 			 */
-			this.restoreHappiness();
+			this.restoreHappiness(this._href);
 
 		},
 
@@ -270,12 +270,13 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 				// Undo Soft98's cruel violence to the poor links
 				var fixedLink = poorChild[0];
 
-				if ( origLocation !== $(fixedLink).attr('href') ) console.warn("Restored original link!", origLocation);
-
 				if (!fixedLink) continue;
 
+				if ( origLocation !== fixedLink.getAttribute('href') ) console.warn("Restored original link!", origLocation);
+
 				fixedLink.setAttribute('data-toggle', 'freedom');
-				$(fixedLink).off('click').attr('href', origLocation);
+				fixedLink.setAttribute('href', origLocation);
+				fixedLink.onclick = null;
 
 			}
 
