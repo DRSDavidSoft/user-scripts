@@ -36,7 +36,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 		ads:	"#kaprila_soft98_ir_related", // .a1d1x, .a1d1x-min, .a1d1x-image, .a1d1x__inner, #a1d1x-header, #a1d1x-special, .a1d1x-sidebar, .a1d1xb, .a1d1x-link, .a1d1x-download
 		a1d1x:	"a1d1x",
 
-		annoyer: "[class*=t][class*=st][class*=fade]",
+		annoyer: "[class*=t][class*=st][class*=fade], .tooltip",
 
 		/** Hold the original `href` attribute */
 		_href:  [ ],
@@ -105,6 +105,8 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 					_links[s], _links[s].getAttribute('href')
 				]
 				this._href.push(query);
+
+				_links[s].addEventListener("mouseenter", this.restoreHappiness.bind(this, this._href));
 			}
 
 			// Two can play your game, Soft98
@@ -115,9 +117,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			);
 			*/
 
-			sentinel.on(this.annoyer, function(element) {
-				this.restoreHappiness.bind(this, this._href);
-			});
+			sentinel.on(this.annoyer, this.restoreHappiness.bind(this, this._href));
 
 			/** Remove all shit from this page */
 			this.shitRemover(_ads);
@@ -276,7 +276,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 				fixedLink.setAttribute('data-toggle', 'freedom');
 				fixedLink.setAttribute('href', origLocation);
-				fixedLink.onclick = null;
+				if ( typeof $ == 'function' ) $(fixedLink).off('click');
 
 			}
 
