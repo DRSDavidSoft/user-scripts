@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.7b
+// @version      0.8b
 // @description  Removes Soft98.ir's annoying message to disable adblocker.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -12,10 +12,13 @@
 // @license      MIT
 // ==/UserScript==
 
+// SentinelJS is a JavaScript library that lets you detect new DOM nodes
+const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function(a,s){if(s){if(!e){var f=document,l=f.head;f.addEventListener("animationstart",function(e,n,t,i){if(n=o[e.animationName])for(e.stopImmediatePropagation(),t=n.length,i=0;i<t;i++)n[i](e.target)},!0),e=f.createElement("style"),l.insertBefore(e,l.firstChild),n=e.sheet,t=n.cssRules}(i(a)?a:[a]).map(function(e,i,a){(i=r[e])||(a="!"==e[0],r[e]=i=a?e.slice(1):"sentinel-"+Math.random().toString(16).slice(2),t[n.insertRule("@keyframes "+i+"{from{transform:none;}to{transform:none;}}",t.length)]._id=e,a||(t[n.insertRule(e+"{animation-duration:0.0001s;animation-name:"+i+";}",t.length)]._id=e),r[e]=i),(o[i]=o[i]||[]).push(s)})}},off:function(e,a){(i(e)?e:[e]).map(function(e,i,s,f){if(i=r[e]){if(s=o[i],a)for(f=s.length;f--;)s[f]===a&&s.splice(f,1);else s=[];if(!s.length){for(f=t.length;f--;)t[f]._id==e&&n.deleteRule(f);delete r[e],delete o[i]}}})},reset:function(){r={},o={},e&&e.parentNode.removeChild(e),e=0}}}(document);
+
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA7
+ * Coded by: David@Refoua.me – Version BETA8
  *
  */
 
@@ -32,6 +35,8 @@
 		links:  ".download-list-link, .card-title-link, .card-footer .btn-success",
 		ads:	"#kaprila_soft98_ir_related", // .a1d1x, .a1d1x-min, .a1d1x-image, .a1d1x__inner, #a1d1x-header, #a1d1x-special, .a1d1x-sidebar, .a1d1xb, .a1d1x-link, .a1d1x-download
 		a1d1x:	"a1d1x",
+
+		annoyer: "[class*=t][class*=st][class*=fade]",
 
 		/** Hold the original `href` attribute */
 		_href:  [ ],
@@ -110,6 +115,10 @@
 			);
 			*/
 
+			sentinel.on(this.annoyer, function(element) {
+				this.restoreHappiness.bind(this, this._href);
+			});
+
 			/** Remove all shit from this page */
 			this.shitRemover(_ads);
 
@@ -117,9 +126,9 @@
 			this.runAtReady( this.restoreHappiness.bind(this, this._href) );
 
 			/**
-			 * Let the child play with his toys
+			 * Restore the happniess now
 			 */
-			//this.restoreHandles();
+			this.restoreHappiness();
 
 		},
 
@@ -158,7 +167,7 @@
 
 				for ( var x in _search ) if ( _search.hasOwnProperty(x) && _strings.indexOf(_search[x]) == -1 && !!_search[x] )
 					_strings.push(_search[x]);
-				
+
 			}
 
 			for ( var i in _strings ) if ( _strings.hasOwnProperty(i) )
@@ -188,7 +197,7 @@
 
 			for ( var i in _s ) if ( _s.hasOwnProperty(i) )
 				if ( this.ads.indexOf(_s[i]) == -1 ) this.ads.push(_s[i]);
-			
+
 			this.ads = this.ads.sort().join(', ');
 
 			if ( found.length > 0 )
@@ -260,14 +269,20 @@
 
 				// Undo Soft98's cruel violence to the poor links
 				var fixedLink = poorChild[0];
+
+				if ( origLocation !== $(fixedLink).attr('href') ) console.warn("Restored original link!", origLocation);
+
+				if (!fixedLink) continue;
+
 				fixedLink.setAttribute('data-toggle', 'freedom');
 				$(fixedLink).off('click').attr('href', origLocation);
 
 			}
 
 			// Shut the fuck up, toast
-			var annoyer = document.getElementById("toast");
-			if (annoyer && annoyer.innerHTML.length > 0 && annoyer.innerHTML.indexOf('reload') > -1)
+			var annoyer = document.querySelector(this.annoyer);
+
+			if (annoyer && annoyer.innerHTML.length > 0 && (annoyer.innerHTML.indexOf('reload') > -1 || annoyer.innerHTML.indexOf('F5') > -1))
 				annoyer.parentElement.removeChild(annoyer);
 
 			// Clean up more shit from Soft98
@@ -295,7 +310,7 @@
 			}
 
 			if ( !isSuccess ) return "till next time, suckers!";
-			
+
 			this.runAtReady( this.enhanceLogo.bind(this) );
 
 			console.log("%cAll Pirates, Come Aboard!", 'font-weight: bold; color: blue');
