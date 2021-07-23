@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.8b
+// @version      0.9b
 // @description  Removes Soft98.ir's annoying message to disable adblocker.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA8
+ * Coded by: David@Refoua.me – Version BETA9
  *
  */
 
@@ -26,22 +26,23 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 	'use strict';
 
-	// I have commented my approach as a challenge for Soft98
-	// which means a new challenge for me once they solve it.
+	// I've openly documented my approach for Soft98 as a challenge,
+	// which means a new challenge for me, once they solve it.
 
 	const unblocker = {
 
 		/** Define a list of elements that we need to interact with */
 		links:  ".download-list-link, .card-title-link, .card-footer .btn-success",
-		ads:	"#kaprila_soft98_ir_related", // .a1d1x, .a1d1x-min, .a1d1x-image, .a1d1x__inner, #a1d1x-header, #a1d1x-special, .a1d1x-sidebar, .a1d1xb, .a1d1x-link, .a1d1x-download
+		ads:	"#kaprila_soft98_ir_related, #sidebar-sticky", // .a1d1x, .a1d1x-min, .a1d1x-image, .a1d1x__inner, #a1d1x-header, #a1d1x-special, .a1d1x-sidebar, .a1d1xb, .a1d1x-link, .a1d1x-download
 		a1d1x:	"a1d1x",
 
+		/** Selector for the annoying, nagging, useless elements */
 		annoyer: "[class*=t][class*=st][class*=fade], .tooltip",
 
 		/** Hold the original `href` attribute */
 		_href:  [ ],
 
-		/** Hold the shits (I mean ads) */
+		/** Hold the shits (ehmm... I mean ads) */
 		_shits: [ ],
 
 		/** Ad-unblocker initialization */
@@ -59,6 +60,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			var found = false;
 
+			// Since Soft98 increments their class names, we have to also adjust our keyword
 			this.adjustKeyword();
 
 			if ( typeof $ == 'function' ) {
@@ -87,27 +89,21 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			}
 
 			var _ads = this.getElements(this.ads);
-
+			
+			// We found the little shits! Hooray!
 			if ( _ads.length > 0 ) found = true;
+			
+			this.found_ = found;
 
-			this.brag(!!found);
-
-			if (!found) console.error("Could not find the ads class.");
+			// Get a hold of current actual useful links on this page
+			this.preserveHappiness();
 
 			// Keep track of the shits (I mean ads)
 			this._shits = _ads;
 
-			var _links = this.getElements(this.links);
-
-			/** Save the links to the happiness */
-			for (var s in _links) if ( _links.hasOwnProperty(s) ) {
-				var query = [
-					_links[s], _links[s].getAttribute('href')
-				]
-				this._href.push(query);
-
-				_links[s].addEventListener("mouseenter", this.restoreHappiness.bind(this, this._href));
-			}
+			// Prevent the annoying disable ad-blocker message
+			sentinel.on(this.links, this.preserveHappiness.bind(this));
+			sentinel.on(this.annoyer, this.restoreHappiness.bind(this, this._href));
 
 			// Two can play your game, Soft98
 			/*
@@ -117,21 +113,18 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			);
 			*/
 
-			sentinel.on(this.annoyer, this.restoreHappiness.bind(this, this._href));
-
 			/** Remove all shit from this page */
 			this.shitRemover(_ads);
 
-			/** Make sure we do the thing */
+			/** Make sure we've restored the actual links when the page is loaded */
 			this.runAtReady( this.restoreHappiness.bind(this, this._href) );
 
-			/**
-			 * Restore the happniess now
-			 */
+			/** Restore the links, if any, right now too */
 			this.restoreHappiness(this._href);
 
 		},
 
+		/** The root of the shits (I mean ads) must be found */
 		findRoot: function(nodes) {
 			var roots = $();
 
@@ -144,10 +137,11 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			return roots;
 		},
 
+		/** Deduce the deuce class names (i.e. find the ads) */
 		adjustKeyword: function()
 		{
 
-			var regex = new RegExp( '(' + this.a1d1x.replace(/\d+/g, '\\d+') + ')', 'g' ),
+			var regex = new RegExp( '(' + this.a1d1x.replace(/\d+/g, '\\d*') + ')', 'g' ),
 				found = [], lookup = [], _s = [];
 
 			var _all = document.querySelectorAll('[id],[class]'),
@@ -212,13 +206,12 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 		},
 
+		/** Cleanse the beautiful Soft98 webpage of any type of shit (I mean ads) */
 		shitRemover: function(nodes) {
-
-			if ( typeof $ != 'function' ) return;
 
 			$('.nav-item').each(function() {
 				var isAds = false;
-				$(this).find('.nav-link').each(function() {
+				$(this).find('.nav-link, .dropdown-item').each(function() {
 					if ( $(this).text().replace(/ـ/g, '').indexOf('تبلیغ') !== -1 )
 						isAds = true;
 				});
@@ -233,7 +226,8 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 				shitRoots = this.findRoot(nodes)
 				.filter(function(i){ return $(this).parents('.'+_hClass).length === 0; });
 
-			console.log(shitRoots);
+			if ( shitRoots.length > 0 )
+				console.info("Deleting ads element roots:", shitRoots);
 
 			shitRoots.filter('.card').siblings('hr').remove();
 			// shitRoots.wrap(contentWrapper);
@@ -241,8 +235,8 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			var shits = $('.'+_hClass).children().addBack();
 
-			var emptyImg = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
-				minWidth = 15, minHeight = 15; // cat & mouse (cat = me, mouse = soft98)
+			// var emptyImg = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
+			//	minWidth = 15, minHeight = 15; // cat & mouse (cat = me, mouse = soft98)
 
 			// $(shits).filter("img").attr('src', emptyImg).css({'min-width': (minWidth + 1) + 'px', 'min-height': (minHeight + 1) + 'px'});
 
@@ -258,10 +252,61 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 		},
 
+		/** Keep a track of useful links on Soft98 (e.g. download links) */
+		preserveHappiness: function() {
+
+			var exist = [], added = [], lost = [];
+
+			for ( var l in this._href ) exist.push(this._href[l][0]);
+			
+			var _links = this.getElements(this.links);
+
+			/** Save the links to the happiness */
+			for (var s in _links) if ( _links.hasOwnProperty(s) && !!_links[s] ) {
+
+				var query = [
+					_links[s], _links[s].getAttribute('href')
+				]
+				
+				if ( exist.indexOf(_links[s]) == -1 )
+				{
+					this._href.push(query);
+
+					_links[s].addEventListener("mouseenter", this.restoreHappiness.bind(this, this._href));
+
+					if ( location.href != _links[s].getAttribute('href') ) added.push(_links[s]);
+					else if ( _links[s].className.indexOf('card-title-link') == -1 ) lost.push(_links[s]);
+				}
+
+			}
+
+			// this.restoreHappiness.call(this, this._href);
+
+			if ( added.length > 0 )
+				console.warn("Preserving " + added.length + " link(s)", added);
+
+			if ( lost.length > 0 )
+			{
+				console.error("Lost original links of " + lost.length + " link(s)", lost);
+
+				// this.runAtReady( this.fetchHappiness.bind(this) );
+				this.fetchHappiness.call(this)
+			}
+
+			this.runAtReady( this.restoreHappiness.bind(this, this._href) );
+
+			if ( added.length > 0 && lost.length == 0 ) this.brag(!!this.found_);
+
+			return [added, lost];
+
+		},
+
+		/** Restore the actual useful links to their former glory, before Soft98's attempt to ruin them */
 		restoreHappiness: function(victims) {
 
-			// TODO: remove this call
 			this.resetHandles();
+
+			var stillLost = false;
 
 			// Restore health to the link victims
 			for (var i in victims) if ( victims.hasOwnProperty(i) ) {
@@ -272,10 +317,32 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 				if (!fixedLink) continue;
 
-				if ( origLocation !== fixedLink.getAttribute('href') ) console.warn("Restored original link!", origLocation);
+				if ( (location.href == origLocation /* fixedLink.getAttribute('href') */) && fixedLink.className.indexOf('card-title-link') == -1 )
+				{
+					fixedLink.style.color = '#d95f47';
 
-				fixedLink.setAttribute('data-toggle', 'freedom');
-				fixedLink.setAttribute('href', origLocation);
+					var attrs = {
+						title: "متأسفانه لینک از بین رفته است"
+					};
+
+					for ( var l in attrs ) fixedLink.setAttribute(l, attrs[l]);
+
+					stillLost = true;
+
+					continue;
+				}
+
+				if ( origLocation !== fixedLink.getAttribute('href') && origLocation.indexOf('#') !== 0 )
+					console.warn("Restored original link!", origLocation);
+
+				var attrs = {
+					'data-toggle' : "freedom", 'title': '',
+					'href': origLocation
+				};
+
+				for ( var l in attrs ) fixedLink.setAttribute(l, attrs[l]);
+
+				fixedLink.style.color = '';
 				if ( typeof $ == 'function' ) $(fixedLink).off('click');
 
 			}
@@ -289,10 +356,94 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			// Clean up more shit from Soft98
 			this.shitRemover( this.getElements(this.ads) );
 
+			return !stillLost;
+
 		},
 
-		// Send some messages to show off my abilities and mock Soft98
+		/** Sometimes, we need to start over from scratch. Particularly if <some> person is trying to be a dickhead */
+		fetchHappiness: function() {
+			var _h = this;
+
+			if ( this.isFetching ) return;
+			else this.isFetching = true;
+
+			console.info("Trying to restore original links...");
+
+			var request = new XMLHttpRequest();
+			request.open('GET', location.href, true);
+
+			this.runAtReady( this.enhanceLogo.bind(this) );
+
+			request.onload = function() {
+				if (this.status != 200) {
+					console.error("Unexpected http code: ", this.status, " when trying to fetch links!");
+
+					_h.isFetching = false;
+					window.setTimeout( _h.fetchHappiness.bind(_h), 3000 );
+					_h.runAtReady( _h.revertLogo.bind(_h) );
+
+				} else {
+
+					if ( typeof $ != 'function' )
+					{
+						_h.isFetching = false;
+						window.setTimeout( _h.fetchHappiness.bind(_h), 3000 );
+						_h.runAtReady( _h.revertLogo.bind(_h) );	
+
+						console.error("WARNING: jQuery is not ready :(");
+						return;
+					}
+
+					var $l = $(this.response).find(_h.links);
+				
+					for ( var i in _h._href ) if ( _h._href.hasOwnProperty(i) )
+					{
+						var originalText = _h._href[i][0].innerHTML.trim(),
+							ln = [];
+	
+						$l.filter( function() { return this.innerHTML.indexOf(originalText) > -1 } ).each(function() {
+							var nh = (this.getAttribute('href') || '').trim();
+							if (nh.length > 0 && ln.indexOf(nh) == -1) ln.push(nh); // console.log(this.innerHTML, this.getAttribute('href'));
+						});
+
+						if ( ln.length == 0 )
+							console.error("ERROR: no match found for: ", originalText);
+						else if ( ln.length > 1 )
+							console.warn("WARNING: multiple matched found for: ", originalText, ln.join("\n"));
+						else {
+							if ( _h._href[i][1] == ln[0] ) continue;
+							console.info("Found match for:", originalText, ln[0]);
+							// _h._href[i][0].setAttribute('href', ln[0]);
+							_h._href[i][1] = ln[0];
+						}
+					}
+
+					var r = _h.restoreHappiness.call(_h);
+
+					if (r) _h.brag(!!_h.found_);
+					else console.error("Unable to restore all links! :(");
+
+					_h.runAtReady( _h.restoreHappiness.bind(_h, _h._href) );
+
+				}
+			};
+
+			request.onerror = function() {
+				console.error("Failed to fetch links!");
+
+				_h.isFetching = false;
+				window.setTimeout( _h.fetchHappiness.bind(_h), 3000 );
+				_h.runAtReady( _h.revertLogo.bind(_h) );
+			};
+
+			request.send();
+
+		},
+
+		/** Send some messages to show off my abilities and mock Soft98 */
 		brag: function(isSuccess) {
+
+			if ( this.enoughShowOff ) return; else this.enoughShowOff = true;
 
 			console.clear();
 
@@ -320,12 +471,20 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 		},
 
-		// I know, this logo is wayyy better than original.
+		/** I know, this logo is wayyy better than original. */
 		enhanceLogo: function() {
+
+			this.originalLogoUrl = document.getElementById('logo-link').style.backgroundImage;
 
 			// Sorry, but I couldn't help myself
 			document.getElementById('logo-link').style.backgroundImage = 'url(https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png)';
 
+		},
+
+		/** In case we failed miserably, and might need to revert back the logo :( */
+		revertLogo: function() {
+			if (!!this.originalLogoUrl) return;
+			document.getElementById('logo-link').style.backgroundImage = this.originalLogoUrl;
 		},
 
 		/** Helper function to check Soft98 traps */
@@ -346,7 +505,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 				if ($obj.is(":hidden")) trips.push("was hidden");
 				if (left < 0 || left > $(window).width()) trips.push("outside screen");
-				//if (-1 !== $obj.css("visibility").indexOf("hidden")) trips.push("not visible");
+				// if (-1 !== $obj.css("visibility").indexOf("hidden")) trips.push("not visible");
 				if (-1 !== $obj.css("visibility").search(/hidden|collapse/)) trips.push("not visible");
 				if (-1 === $obj.css("transform").search(/none/)) trips.push("transform tripped");
 				if ($obj.css("opacity") < 1) trips.push("opacity tripped");
@@ -397,7 +556,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			/** Find a reference to a document */
 			var original = ({}).constructor.getPrototypeOf(document);
 
-			/** my approach is to copy original methods from the new document constructor */
+			/** My approach is to copy original methods from the new document constructor */
 			for ( var i in this.handles.list ) {
 
 				var name = this.handles.list[i],
@@ -460,6 +619,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 	// Attach the unblocker handle to the global namespace using an... interesting name
 	// $(document).data("fucker", unblocker);
 
+	// If you find the word "fuck" in Soft98's inappropriately named "jquery.js", now you know why.
 	// document.fucker = unblocker;
 
 })();
