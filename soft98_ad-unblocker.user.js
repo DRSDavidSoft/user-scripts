@@ -711,6 +711,6 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 	// $(document).data("fucker", unblocker);
 
 	// If you find the word "fuck" in Soft98's inappropriately named "jquery.js", now you know why.
-	document.fucker = unblocker;
+	// document.fucker = unblocker;
 
 })();
