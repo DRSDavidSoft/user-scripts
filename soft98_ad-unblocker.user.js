@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Soft98 Ad-Blocker
+// @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.11b
-// @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores download links.
+// @version      0.12b
+// @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
 // @downloadURL  https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA11
+ * Coded by: David@Refoua.me – Version BETA12
  *
  */
 
@@ -44,6 +44,8 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 
 		/** Hold the shits (ehmm... I mean ads) */
 		_shits: [ ], _pp: [],
+
+		ignoreHappiness: [],
 
 		/** Ad-unblocker initialization */
 		init: function () {
@@ -99,7 +101,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 			this.preserveHappiness();
 
 			// Keep track of the shits (I mean ads)
-			this._shits = _ads;
+			for (var a in _ads) if (_ads.hasOwnProperty(a) && this._shits.indexOf(_ads[a]) == -1) this._shits.push(_ads[a]);
 
 			// Prevent the annoying disable ad-blocker message
 			sentinel.on(this.links, this.preserveHappiness.bind(this));
@@ -285,7 +287,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 			while (!!el && (el.className || '').toLowerCase().indexOf('card-header') == -1 && el.tagName != "dt" && el != document.body)
 				el = el.previousSibling;
 
-			while (!!dl && (dl.id || '').toLowerCase().indexOf('download-list') == -1 && dl.tagName != "dl" && dl != document.body)
+			while (!!dl && ( (dl.id || '').toLowerCase().indexOf('download-list') == -1 || (dl.id || '').toLowerCase().indexOf('main') == -1) && dl.tagName != "dl" && dl != document.body)
 				dl = dl.parentNode;
 
 			if (!!dl && !!s && dl.contains(s))
@@ -368,7 +370,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 				// Undo Soft98's cruel violence to the poor links
 				var fixedLink = poorChild[0];
 
-				if (!fixedLink || !fixedLink.innerText) continue;
+				if (!fixedLink || !fixedLink.innerText || this.ignoreHappiness.indexOf(fixedLink) > -1) continue;
 
 				if (!document.body.contains(fixedLink))
 				{
@@ -394,6 +396,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 					else if (matches.length == 0)
 					{
 						console.error("ERROR: link is no longer part of this document!", fixedLink);
+						this.ignoreHappiness.push(fixedLink);
 						continue;
 					}
 
@@ -534,6 +537,16 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 		/** Send some messages to show off my abilities and mock Soft98 */
 		brag: function(isSuccess) {
 
+			if (!isSuccess)
+			{
+				if (!this.deferredBrag)
+				{
+					this.deferredBrag = true;
+					this.runAtReady( this.init.bind(this) );
+				}
+				return;
+			}
+
 			if ( this.enoughShowOff ) return;
 			else this.enoughShowOff = true;
 
@@ -558,6 +571,19 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 			this.runAtReady( this.enhanceLogo.bind(this) );
 
 			console.log("%c🏴‍☠️ All Pirates, Come Aboard!", ['font-weight: bold', 'color: blue'].join(';'));
+
+			if (isSuccess)
+			{
+				var footerNote = document.querySelectorAll('.footer-line'), l = footerNote.length > 0 ? footerNote[footerNote.length-1] : null;
+				for (var i in footerNote) if (footerNote.hasOwnProperty(i) && !!footerNote[i] && footerNote[i].innerText.trim().length == 0 ) l = footerNote[i];
+
+				var taunt = l.cloneNode();
+				taunt.id = '';
+				taunt.style.marginTop = '';
+				taunt.style.marginBottom = '1em';
+				taunt.innerHTML = "با افتخار بدون تبلیغات توسط کد <a class=\"footer-link\" rel=\"nofollow\" target=\"_blank\" href=\"https://github.com/DRSDavidSoft/user-scripts/blob/master/soft98_ad-unblocker.user.js\">حذف تبلیغات مزاحم</a> سافت ٩٨! 😆😂🤣";
+				l.parentNode.insertBefore(taunt, l);
+			}
 
 			return "Be Happy ☺";
 
