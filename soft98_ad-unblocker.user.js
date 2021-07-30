@@ -2,8 +2,8 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.9b
-// @description  Removes Soft98.ir's annoying message to disable adblocker.
+// @version      0.10b
+// @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
 // @downloadURL  https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -13,12 +13,12 @@
 // ==/UserScript==
 
 // SentinelJS is a JavaScript library that lets you detect new DOM nodes
-const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function(a,s){if(s){if(!e){var f=document,l=f.head;f.addEventListener("animationstart",function(e,n,t,i){if(n=o[e.animationName])for(e.stopImmediatePropagation(),t=n.length,i=0;i<t;i++)n[i](e.target)},!0),e=f.createElement("style"),l.insertBefore(e,l.firstChild),n=e.sheet,t=n.cssRules}(i(a)?a:[a]).map(function(e,i,a){(i=r[e])||(a="!"==e[0],r[e]=i=a?e.slice(1):"sentinel-"+Math.random().toString(16).slice(2),t[n.insertRule("@keyframes "+i+"{from{transform:none;}to{transform:none;}}",t.length)]._id=e,a||(t[n.insertRule(e+"{animation-duration:0.0001s;animation-name:"+i+";}",t.length)]._id=e),r[e]=i),(o[i]=o[i]||[]).push(s)})}},off:function(e,a){(i(e)?e:[e]).map(function(e,i,s,f){if(i=r[e]){if(s=o[i],a)for(f=s.length;f--;)s[f]===a&&s.splice(f,1);else s=[];if(!s.length){for(f=t.length;f--;)t[f]._id==e&&n.deleteRule(f);delete r[e],delete o[i]}}})},reset:function(){r={},o={},e&&e.parentNode.removeChild(e),e=0}}}(document);
+var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function(a,s){if(s){if(!e){var f=document,l=f.head;f.addEventListener("animationstart",function(e,n,t,i){if(n=o[e.animationName])for(e.stopImmediatePropagation(),t=n.length,i=0;i<t;i++)n[i](e.target)},!0),e=f.createElement("style"),l.insertBefore(e,l.firstChild),n=e.sheet,t=n.cssRules}(i(a)?a:[a]).map(function(e,i,a){(i=r[e])||(a="!"==e[0],r[e]=i=a?e.slice(1):"sentinel-"+Math.random().toString(16).slice(2),t[n.insertRule("@keyframes "+i+"{from{transform:none;}to{transform:none;}}",t.length)]._id=e,a||(t[n.insertRule(e+"{animation-duration:0.0001s;animation-name:"+i+";}",t.length)]._id=e),r[e]=i),(o[i]=o[i]||[]).push(s)})}},off:function(e,a){(i(e)?e:[e]).map(function(e,i,s,f){if(i=r[e]){if(s=o[i],a)for(f=s.length;f--;)s[f]===a&&s.splice(f,1);else s=[];if(!s.length){for(f=t.length;f--;)t[f]._id==e&&n.deleteRule(f);delete r[e],delete o[i]}}})},reset:function(){r={},o={},e&&e.parentNode.removeChild(e),e=0}}}(document);
 
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA9
+ * Coded by: David@Refoua.me – Version BETA10
  *
  */
 
@@ -26,8 +26,8 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 	'use strict';
 
-	// I've openly documented my approach for Soft98 as a challenge,
-	// which means a new challenge for me, once they solve it.
+	// I am openly documenting my approach for Soft98 as a challenge,
+	// which means a new challenge for me once they manage to block it.
 
 	const unblocker = {
 
@@ -43,7 +43,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 		_href:  [ ],
 
 		/** Hold the shits (ehmm... I mean ads) */
-		_shits: [ ],
+		_shits: [ ], _pp: [],
 
 		/** Ad-unblocker initialization */
 		init: function () {
@@ -60,7 +60,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			var found = false;
 
-			// Since Soft98 increments their class names, we have to also adjust our keyword
+			// Since Soft98 increments their class names, we also have to adjust our keyword
 			this.adjustKeyword();
 
 			if ( typeof $ == 'function' ) {
@@ -89,10 +89,10 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			}
 
 			var _ads = this.getElements(this.ads);
-			
+
 			// We found the little shits! Hooray!
 			if ( _ads.length > 0 ) found = true;
-			
+
 			this.found_ = found;
 
 			// Get a hold of current actual useful links on this page
@@ -105,7 +105,6 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			sentinel.on(this.links, this.preserveHappiness.bind(this));
 			sentinel.on(this.annoyer, this.restoreHappiness.bind(this, this._href));
 
-			// Two can play your game, Soft98
 			/*
 			this._tID = window.setInterval(
 				function() { this.runAtReady( this.restoreHappiness.bind(this, this._href) ) }.bind(this),
@@ -121,6 +120,8 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			/** Restore the links, if any, right now too */
 			this.restoreHappiness(this._href);
+
+			this.runAtReady( this.shitRemover.bind(this, this._pp) );
 
 		},
 
@@ -206,8 +207,23 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 		},
 
-		/** Cleanse the beautiful Soft98 webpage of any type of shit (I mean ads) */
+		/** Cleanse the beautiful webpage of any type of shit (I mean ads) */
 		shitRemover: function(nodes) {
+
+			if ( typeof $ != 'function' )
+			{
+				if ( document.readyState === "loading" )
+				{
+					for ( var p in nodes ) if ( nodes.hasOwnProperty(p) && this._pp.indexOf(nodes[p]) == -1 )
+						this._pp.push(nodes[p]);
+
+					return;
+				}
+
+				window.setTimeout( this.shitRemover.bind(this, nodes), 1500 );
+				console.log("%cNOTE: jQuery not available yet, cannot remove ads!", 'font-color: red');
+				return;
+			}
 
 			$('.nav-item').each(function() {
 				var isAds = false;
@@ -227,7 +243,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 				.filter(function(i){ return $(this).parents('.'+_hClass).length === 0; });
 
 			if ( shitRoots.length > 0 )
-				console.info("Deleting ads element roots:", shitRoots);
+				console.info("%c🧹 Deleting Ad Element Roots:", 'font-weight: bold', shitRoots); // Hasta La Vista Bitches
 
 			shitRoots.filter('.card').siblings('hr').remove();
 			// shitRoots.wrap(contentWrapper);
@@ -252,13 +268,13 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 		},
 
-		/** Keep a track of useful links on Soft98 (e.g. download links) */
+		/** Keep a track of useful links on the webpage (e.g. download links) */
 		preserveHappiness: function() {
 
 			var exist = [], added = [], lost = [];
 
 			for ( var l in this._href ) exist.push(this._href[l][0]);
-			
+
 			var _links = this.getElements(this.links);
 
 			/** Save the links to the happiness */
@@ -267,7 +283,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 				var query = [
 					_links[s], _links[s].getAttribute('href')
 				]
-				
+
 				if ( exist.indexOf(_links[s]) == -1 )
 				{
 					this._href.push(query);
@@ -287,7 +303,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			if ( lost.length > 0 )
 			{
-				console.error("Lost original links of " + lost.length + " link(s)", lost);
+				console.error("%cLost original links of " + lost.length + " link(s)", 'font-weight: bold', lost);
 
 				// this.runAtReady( this.fetchHappiness.bind(this) );
 				this.fetchHappiness.call(this)
@@ -307,6 +323,8 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			this.resetHandles();
 
 			var stillLost = false;
+
+			var css = ['font-weight: bold'].join(';');
 
 			// Restore health to the link victims
 			for (var i in victims) if ( victims.hasOwnProperty(i) ) {
@@ -333,17 +351,21 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 				}
 
 				if ( origLocation !== fixedLink.getAttribute('href') && origLocation.indexOf('#') !== 0 )
-					console.warn("Restored original link!", origLocation);
+				{
 
-				var attrs = {
-					'data-toggle' : "freedom", 'title': '',
-					'href': origLocation
-				};
+					var attrs = {
+						'data-toggle' : "freedom", 'title': '',
+						'href': origLocation
+					};
 
-				for ( var l in attrs ) fixedLink.setAttribute(l, attrs[l]);
+					for ( var l in attrs ) fixedLink.setAttribute(l, attrs[l]);
 
-				fixedLink.style.color = '';
-				if ( typeof $ == 'function' ) $(fixedLink).off('click');
+					fixedLink.style.color = '';
+					if ( typeof $ == 'function' ) $(fixedLink).off('click');
+
+					console.warn("%c▶ Restored original link!", css, {title: fixedLink.innerHTML.trim(), link: origLocation});
+
+				}
 
 			}
 
@@ -367,7 +389,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 			if ( this.isFetching ) return;
 			else this.isFetching = true;
 
-			console.info("Trying to restore original links...");
+			console.info("%c Trying to restore original links...", ['font-weight: bold', 'color: #125aed'].join(';'));
 
 			var request = new XMLHttpRequest();
 			request.open('GET', location.href, true);
@@ -388,19 +410,19 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 					{
 						_h.isFetching = false;
 						window.setTimeout( _h.fetchHappiness.bind(_h), 3000 );
-						_h.runAtReady( _h.revertLogo.bind(_h) );	
+						_h.runAtReady( _h.revertLogo.bind(_h) );
 
 						console.error("WARNING: jQuery is not ready :(");
 						return;
 					}
 
 					var $l = $(this.response).find(_h.links);
-				
+
 					for ( var i in _h._href ) if ( _h._href.hasOwnProperty(i) )
 					{
 						var originalText = _h._href[i][0].innerHTML.trim(),
 							ln = [];
-	
+
 						$l.filter( function() { return this.innerHTML.indexOf(originalText) > -1 } ).each(function() {
 							var nh = (this.getAttribute('href') || '').trim();
 							if (nh.length > 0 && ln.indexOf(nh) == -1) ln.push(nh); // console.log(this.innerHTML, this.getAttribute('href'));
@@ -412,7 +434,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 							console.warn("WARNING: multiple matched found for: ", originalText, ln.join("\n"));
 						else {
 							if ( _h._href[i][1] == ln[0] ) continue;
-							console.info("Found match for:", originalText, ln[0]);
+							console.info("Found match for:", {title: originalText, link: ln[0]});
 							// _h._href[i][0].setAttribute('href', ln[0]);
 							_h._href[i][1] = ln[0];
 						}
@@ -443,12 +465,15 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 		/** Send some messages to show off my abilities and mock Soft98 */
 		brag: function(isSuccess) {
 
-			if ( this.enoughShowOff ) return; else this.enoughShowOff = true;
+			if ( this.enoughShowOff ) return;
+			else this.enoughShowOff = true;
 
 			console.clear();
 
-			var shit = 'Soft98-Ads'.split(','),
-				css = 'font-size: 200%; font-family: sans-serif; padding: 0 20px;'
+			var host = location.host.replace(/\.\w+$/gi, '')
+				.replace( /\w\S*/g, function(txt) { return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(); }),
+				shit = 'Ads', cleaner = 'Fucker',
+				css = ['font-size: 200%', 'font-family: sans-serif', 'padding: 0 20px'].join(';') + ';'
 					+ ( isSuccess ?
 						'background-color: #0097e6; color: #f5f6fa;' :
 						'background-color: #c0392b; color: #ecf0f1;' )
@@ -457,15 +482,13 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			var status = isSuccess ? 'is enabled!' : 'failed to work :('
 
-			for ( var i in shit ) {
-				console.info( `%c${shit[i].trim()} fucker ${status}`, css );
-			}
+			console.info( `%c${[host, shit, cleaner].join(' ').trim()} ${status}`, css );
 
 			if ( !isSuccess ) return "till next time, suckers!";
 
 			this.runAtReady( this.enhanceLogo.bind(this) );
 
-			console.log("%cAll Pirates, Come Aboard!", 'font-weight: bold; color: blue');
+			console.log("%c🏴‍☠️ All Pirates, Come Aboard!", ['font-weight: bold', 'color: blue'].join(';'));
 
 			return "Be Happy ☺";
 
@@ -492,7 +515,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 			console.clear();
 
-			// Call this like:
+			// Call it like this:
 			// unblocker.trapCheck(unblocker._shits);
 			// var u = $(document).data("fucker"), r = u.trapCheck(u._shits);
 			$(nodeList).children().addBack().each(function() {
@@ -544,11 +567,10 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 		resetHandles: function()
 		{
 
-			// Why do you make me do this...?
 			if (!Object.getPrototypeOf)
 			{
 				Object.getPrototypeOf = function getPrototypeOf(object) {
-					console.info("%cWhy do you make me do this? %c:(", 'color: red', 'font-weight: bold');
+					console.info("%cWhy do you make me do this...? %c:(", 'color: red', 'font-weight: bold');
 					return object.__proto__;
 				};
 			}
@@ -605,7 +627,7 @@ const sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:functi
 
 		},
 
-		/** Helper function to execute callback at DOM ready */
+		/** Utility function to execute callback at DOM ready */
 		runAtReady: function (fn) {
 			if (document.attachEvent ? document.readyState === "complete" : document.readyState !== "loading") fn();
 			else document.addEventListener('DOMContentLoaded', fn);
