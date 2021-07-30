@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name         Soft98 Disable Ad-unblocker
+// @name         Soft98 Ad-Blocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.10b
-// @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
+// @version      0.11b
+// @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores download links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
 // @downloadURL  https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA10
+ * Coded by: David@Refoua.me – Version BETA11
  *
  */
 
@@ -268,6 +268,41 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 
 		},
 
+		/** Extract a particular link's parent section **/
+		findSection: function(el) {
+			var s = null, dl = el, suffix = '';
+
+			if (!el) return el;
+
+			if (el.className && el.className.indexOf('card-title-link') > -1)
+				return el.innerText.replace(/\s+/g, ' ') || '';
+
+			while (!!el && (el.className || '').toLowerCase().indexOf('download-list-item') == -1 && el.tagName != "dd" && el != document.body)
+				el = el.parentNode;
+
+			s = el;
+
+			while (!!el && (el.className || '').toLowerCase().indexOf('card-header') == -1 && el.tagName != "dt" && el != document.body)
+				el = el.previousSibling;
+
+			while (!!dl && (dl.id || '').toLowerCase().indexOf('download-list') == -1 && dl.tagName != "dl" && dl != document.body)
+				dl = dl.parentNode;
+
+			if (!!dl && !!s && dl.contains(s))
+			{
+				var all = dl.getElementsByTagName(s.tagName), item = 0;
+
+				for (var t in all) if (all.hasOwnProperty(t))
+				{
+					if (all[t] && all[t].className && all[t].className.indexOf('buysellads') > -1) continue;
+					if (all[t] == s) { suffix = '_#' + item; break; }
+					item++;
+				}
+			}
+
+			return (!!el && !!el.innerText) ? el.innerText.replace(/\s+/g, ' ') + suffix : suffix;
+		},
+
 		/** Keep a track of useful links on the webpage (e.g. download links) */
 		preserveHappiness: function() {
 
@@ -333,7 +368,38 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 				// Undo Soft98's cruel violence to the poor links
 				var fixedLink = poorChild[0];
 
-				if (!fixedLink) continue;
+				if (!fixedLink || !fixedLink.innerText) continue;
+
+				if (!document.body.contains(fixedLink))
+				{
+					var _c = (fixedLink.className || '').split(/\s+/gi),
+						cls = '';
+
+					if (_c.length > 0) cls = '.' + _c.join('.');
+
+					var list = document.querySelectorAll(fixedLink.tagName + cls),
+						matches = [];
+
+					var section = this.findSection(fixedLink);
+
+					for (var j in list) if (list.hasOwnProperty(j) && (list[j].innerText || '').trim() == fixedLink.innerText.trim())
+					{
+						if ( this.findSection(list[j]) == section )
+							matches.push(list[j]);
+					}
+
+					if (matches.length > 1)
+						console.error("ERROR: multiple matches found for link!", fixedLink, matches);
+
+					else if (matches.length == 0)
+					{
+						console.error("ERROR: link is no longer part of this document!", fixedLink);
+						continue;
+					}
+
+					victims[i][0] = fixedLink =
+						matches[0];
+				}
 
 				if ( (location.href == origLocation /* fixedLink.getAttribute('href') */) && fixedLink.className.indexOf('card-title-link') == -1 )
 				{
@@ -421,9 +487,12 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 					for ( var i in _h._href ) if ( _h._href.hasOwnProperty(i) )
 					{
 						var originalText = _h._href[i][0].innerHTML.trim(),
+							section = _h.findSection(_h._href[i][0]) || '',
 							ln = [];
 
-						$l.filter( function() { return this.innerHTML.indexOf(originalText) > -1 } ).each(function() {
+						$l.filter( function() { return this.innerHTML.indexOf(originalText) > -1 /*&& _h.findSection(this) == section*/ } )
+						.each(function() {
+							if ( !!section && section != _h.findSection(this) ) return;
 							var nh = (this.getAttribute('href') || '').trim();
 							if (nh.length > 0 && ln.indexOf(nh) == -1) ln.push(nh); // console.log(this.innerHTML, this.getAttribute('href'));
 						});
@@ -431,7 +500,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 						if ( ln.length == 0 )
 							console.error("ERROR: no match found for: ", originalText);
 						else if ( ln.length > 1 )
-							console.warn("WARNING: multiple matched found for: ", originalText, ln.join("\n"));
+							console.warn("WARNING: multiple matches found for: ", originalText, ln.join("\n"));
 						else {
 							if ( _h._href[i][1] == ln[0] ) continue;
 							console.info("Found match for:", {title: originalText, link: ln[0]});
@@ -642,6 +711,6 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 	// $(document).data("fucker", unblocker);
 
 	// If you find the word "fuck" in Soft98's inappropriately named "jquery.js", now you know why.
-	// document.fucker = unblocker;
+	document.fucker = unblocker;
 
 })();
