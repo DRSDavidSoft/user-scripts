@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.12b
+// @version      0.13b
 // @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA12
+ * Coded by: David@Refoua.me – Version BETA13
  *
  */
 
@@ -287,7 +287,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 			while (!!el && (el.className || '').toLowerCase().indexOf('card-header') == -1 && el.tagName != "dt" && el != document.body)
 				el = el.previousSibling;
 
-			while (!!dl && ( (dl.id || '').toLowerCase().indexOf('download-list') == -1 || (dl.id || '').toLowerCase().indexOf('main') == -1) && dl.tagName != "dl" && dl != document.body)
+			while (!!dl && ( (dl.id || '').toLowerCase().indexOf('download-list') == -1 && (dl.id || '').toLowerCase().indexOf('main') == -1) && dl.tagName != "dl" && dl != document.body)
 				dl = dl.parentNode;
 
 			if (!!dl && !!s && dl.contains(s))
@@ -501,9 +501,9 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 						});
 
 						if ( ln.length == 0 )
-							console.error("ERROR: no match found for: ", originalText);
+							console.error("ERROR: no match found for:", originalText);
 						else if ( ln.length > 1 )
-							console.warn("WARNING: multiple matches found for: ", originalText, ln.join("\n"));
+							console.warn("WARNING: multiple matches found for:", originalText, ln.join("\n"));
 						else {
 							if ( _h._href[i][1] == ln[0] ) continue;
 							console.info("Found match for:", {title: originalText, link: ln[0]});
@@ -572,21 +572,25 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 
 			console.log("%c🏴‍☠️ All Pirates, Come Aboard!", ['font-weight: bold', 'color: blue'].join(';'));
 
-			if (isSuccess)
-			{
-				var footerNote = document.querySelectorAll('.footer-line'), l = footerNote.length > 0 ? footerNote[footerNote.length-1] : null;
-				for (var i in footerNote) if (footerNote.hasOwnProperty(i) && !!footerNote[i] && footerNote[i].innerText.trim().length == 0 ) l = footerNote[i];
-
-				var taunt = l.cloneNode();
-				taunt.id = '';
-				taunt.style.marginTop = '';
-				taunt.style.marginBottom = '1em';
-				taunt.innerHTML = "با افتخار بدون تبلیغات توسط کد <a class=\"footer-link\" rel=\"nofollow\" target=\"_blank\" href=\"https://github.com/DRSDavidSoft/user-scripts/blob/master/soft98_ad-unblocker.user.js\">حذف تبلیغات مزاحم</a> سافت ٩٨! 😆😂🤣";
-				l.parentNode.insertBefore(taunt, l);
-			}
+			this.runAtReady( this.addFooter.bind(this) );
 
 			return "Be Happy ☺";
 
+		},
+
+		addFooter: function() {
+			if (this.footerNoteAdded) return;
+			else this.footerNoteAdded = true;
+
+			var footerNote = document.querySelectorAll('.footer-line'), l = footerNote.length > 0 ? footerNote[footerNote.length-1] : null;
+			for (var i in footerNote) if (footerNote.hasOwnProperty(i) && !!footerNote[i] && footerNote[i].innerText.trim().length == 0 ) l = footerNote[i];
+
+			var taunt = l.cloneNode();
+			taunt.id = '';
+			taunt.style.marginTop = '';
+			taunt.style.marginBottom = '1em';
+			taunt.innerHTML = "با افتخار بدون تبلیغات توسط کد <a class=\"footer-link\" rel=\"nofollow\" target=\"_blank\" href=\"https://github.com/DRSDavidSoft/user-scripts/blob/master/soft98_ad-unblocker.user.js\">حذف تبلیغات مزاحم</a> سافت ٩٨! 😆😂🤣";
+			l.parentNode.insertBefore(taunt, l);
 		},
 
 		/** I know, this logo is wayyy better than original. */
