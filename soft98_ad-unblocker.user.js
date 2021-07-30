@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.13b
+// @version      0.14b
 // @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA13
+ * Coded by: David@Refoua.me – Version BETA14
  *
  */
 
@@ -107,12 +107,14 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 			sentinel.on(this.links, this.preserveHappiness.bind(this));
 			sentinel.on(this.annoyer, this.restoreHappiness.bind(this, this._href));
 
-			/*
-			this._tID = window.setInterval(
-				function() { this.runAtReady( this.restoreHappiness.bind(this, this._href) ) }.bind(this),
-				1000
-			);
-			*/
+			if (!this.initComplete)
+			{
+				window.clearTimeout(this._tID);
+
+				this._tID = window.setTimeout(
+					function() { this.initComplete = true; if (!this.found_) this.init(); this.brag(!!this.found_); }.bind(this), 1500
+				);
+			}
 
 			/** Remove all shit from this page */
 			this.shitRemover(_ads);
@@ -544,7 +546,8 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 					this.deferredBrag = true;
 					this.runAtReady( this.init.bind(this) );
 				}
-				return;
+				if (!this.initComplete)
+					return;
 			}
 
 			if ( this.enoughShowOff ) return;
