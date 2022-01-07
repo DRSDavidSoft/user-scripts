@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.14b
+// @version      0.15b
 // @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA14
+ * Coded by: David@Refoua.me – Version BETA15
  *
  */
 
@@ -435,6 +435,9 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 					if ( typeof $ == 'function' ) $(fixedLink).off('click');
 
 					console.warn("%c▶ Restored original link!", css, {title: fixedLink.innerHTML.trim(), link: origLocation});
+					
+					if ( fixedLink.hasAttribute('target') )
+						fixedLink.removeAttribute('target'); // fix for uBlock Origin disabling links
 
 				}
 
