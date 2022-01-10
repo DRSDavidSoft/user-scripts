@@ -2,7 +2,7 @@
 // @name         Soft98 Disable Ad-unblocker
 // @namespace    DRS David Soft <David@Refoua.me>
 // @author       David Refoua
-// @version      0.15b
+// @version      0.16b
 // @description  Removes Soft98.ir's annoying message to disable ad-blocker, and restores links.
 // @run-at:      document-start
 // @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-unblocker.user.js
@@ -18,7 +18,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 /**
  *
  * Enjoy your ad-blocked Soft98 experience.
- * Coded by: David@Refoua.me – Version BETA15
+ * Coded by: David@Refoua.me – Version BETA16
  *
  */
 
@@ -32,7 +32,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 	const unblocker = {
 
 		/** Define a list of elements that we need to interact with */
-		links:  ".download-list-link, .card-title-link, .card-footer .btn-success",
+		links:  ".download-list-link, .card-title-link, .card-footer .btn-success, .top-list-link",
 		ads:	"#kaprila_soft98_ir_related, #sidebar-sticky", // .a1d1x, .a1d1x-min, .a1d1x-image, .a1d1x__inner, #a1d1x-header, #a1d1x-special, .a1d1x-sidebar, .a1d1xb, .a1d1x-link, .a1d1x-download
 		a1d1x:	"a1d1x",
 
@@ -146,11 +146,59 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 		adjustKeyword: function()
 		{
 
-			var regex = new RegExp( '(' + this.a1d1x.replace(/\d+/g, '\\d*') + ')', 'g' ),
-				found = [], lookup = [], _s = [];
+			var regex = new RegExp( '(' + this.a1d1x.replace(/[a-z]+/ig, '[a-z]+').replace(/\d+/g, unescape('%5c') + 'd*') + ')', 'g' ),
+				stop = [], found = [], lookup = [], matches = [], _imgs = [], _s = [];
 
 			var _all = document.querySelectorAll('[id],[class]'),
+				_links = document.links,
 				_strings = [];
+
+			for ( var i in _links ) if ( _links.hasOwnProperty(i) )
+			{
+				if ( !_links[i].id && !_links[i].className )
+					continue;
+
+				if ( !_links[i].href || _links[i].href.indexOf('#') === 0 || _links[i].href.indexOf('/') === 0 )
+					continue;
+
+				if ( !(_imgs = _links[i].getElementsByTagName('img')).length )
+					continue;
+
+				var cl = !!_links[i].className ? _links[i].className.split(/\s+/g) : [];
+				if ( !!_links[i].id ) cl.push(_links[i].id);
+
+				var inptr = '';
+				for ( var n in _imgs ) if ( _imgs.hasOwnProperty(n) )
+					inptr += (_imgs[n].id||'') + ' ' + (_imgs[n].className||'') + ' ';
+				inptr = inptr.trim().replace(/\s+/g, ' ');
+
+				for ( var x in cl ) if ( cl.hasOwnProperty(x) )
+				{
+					if ( !(matches = cl[x].match(regex)) )
+						continue;
+
+					for ( var x in matches ) if ( matches.hasOwnProperty(x) )
+					{
+						if ( inptr.indexOf(matches[x]) !== -1 && stop.indexOf(matches[x]) === -1 )
+								stop.push(matches[x]);
+					}
+				}
+			}
+
+			if ( stop.length == 0 )
+				console.warn('%cWARNING: %cdid not detect any keywords!', 'font-weight: bold', '');
+
+			else if ( stop.length > 1 )
+			{
+				console.warn('%cWARNING: %cdetected more than 1 keyword:', 'font-weight: bold', '');
+				console.warn(stop);
+			}
+
+			for ( var i in stop ) if ( stop.hasOwnProperty(i) )
+			{
+				this.a1d1x = stop[i];
+				regex = new RegExp( '(' + this.a1d1x + ')', 'g' );
+			}
 
 			for ( var i in _all ) if ( _all.hasOwnProperty(i) )
 			{
@@ -225,7 +273,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 				}
 
 				window.setTimeout( this.shitRemover.bind(this, nodes), 1500 );
-				console.log("%cNOTE: jQuery not available yet, cannot remove ads!", 'font-color: red');
+				console.log("%cNOTE: %cjQuery not available yet, cannot remove ads!", 'font-weight: bold; color: red', '');
 				return;
 			}
 
@@ -331,6 +379,9 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 
 					if ( location.href != _links[s].getAttribute('href') ) added.push(_links[s]);
 					else if ( _links[s].className.indexOf('card-title-link') == -1 ) lost.push(_links[s]);
+
+					if ( _links[s].hasAttribute('target') )
+						_links[s].removeAttribute('target');
 				}
 
 			}
@@ -435,7 +486,7 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 					if ( typeof $ == 'function' ) $(fixedLink).off('click');
 
 					console.warn("%c▶ Restored original link!", css, {title: fixedLink.innerHTML.trim(), link: origLocation});
-					
+
 					if ( fixedLink.hasAttribute('target') )
 						fixedLink.removeAttribute('target'); // fix for uBlock Origin disabling links
 
@@ -602,17 +653,40 @@ var sentinel = function(){var e,n,t,i=Array.isArray,r={},o={};return{on:function
 		/** I know, this logo is wayyy better than original. */
 		enhanceLogo: function() {
 
-			this.originalLogoUrl = document.getElementById('logo-link').style.backgroundImage;
+			// this.originalLogoUrl = document.getElementById('logo-link').style.backgroundImage;
 
-			// Sorry, but I couldn't help myself
-			document.getElementById('logo-link').style.backgroundImage = 'url(https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png)';
+			var img = false, attempt = false;
+
+			try
+			{
+				do
+				{
+					img = document.getElementById('logo-link').querySelector('img');
+
+					if (!img)
+					{
+						if (!attempt) document.getElementById('logo-link').innerHTML = '<img>';
+						else break;
+					}
+					else break;
+				}
+				while(!img)
+
+				img.src = "https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png";
+			}
+			catch (e)
+			{
+				console.warn(e)
+			}
 
 		},
 
 		/** In case we failed miserably, and might need to revert back the logo :( */
 		revertLogo: function() {
-			if (!!this.originalLogoUrl) return;
-			document.getElementById('logo-link').style.backgroundImage = this.originalLogoUrl;
+			// if (!!this.originalLogoUrl) return;
+			// document.getElementById('logo-link').style.backgroundImage = this.originalLogoUrl;
+			try { document.getElementById('logo-link').querySelector('img').remove(); }
+			catch(e) {}
 		},
 
 		/** Helper function to check Soft98 traps */
