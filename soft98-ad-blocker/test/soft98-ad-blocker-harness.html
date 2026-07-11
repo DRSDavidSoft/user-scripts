@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fa">
+  <head>
+    <meta charset="utf-8" />
+    <title>Soft98 Test Page</title>
+    <style>
+      body {
+        margin: 0;
+        background: #101820;
+        color: #dce8f5;
+        font: 15px/1.6 system-ui, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 16px;
+        max-width: 960px;
+        margin: 40px auto;
+        padding: 24px;
+      }
+
+      .download-list-link {
+        display: inline-flex;
+        width: fit-content;
+        padding: 12px 16px;
+        border-radius: 8px;
+        color: #07110a;
+        background: #92e6a7;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .proof {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .proof span {
+        padding: 10px;
+        border: 1px solid #2b3b4d;
+        border-radius: 8px;
+        background: #13202c;
+      }
+
+      .ad-slot {
+        padding: 18px;
+        border: 1px dashed #db6b77;
+        border-radius: 8px;
+        color: #ffc9cf;
+      }
+    </style>
+    <script>
+      localStorage.setItem(
+        "soft98-ad-blocker.settings",
+        JSON.stringify({
+          blockAds: true,
+          patchScripts: true,
+          pro: true,
+          darkDesign: true,
+          linkBadges: true,
+          pirateLogo: true,
+          taunt: true,
+          diagnostics: true,
+        })
+      );
+    </script>
+    <script src="../../soft98_ad-blocker.user.js"></script>
+    <script>
+      window.__results = null;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        var link = document.querySelector(".download-list-link");
+
+        setTimeout(function () {
+          link.setAttribute("href", "#");
+          link.setAttribute("onclick", "return false");
+          link.setAttribute("target", "_blank");
+        }, 25);
+
+        setTimeout(function () {
+          var warning = document.createElement("div");
+          warning.className = "tbd_ibd";
+          warning.innerHTML =
+            'افزونه حذف تبلیغات یا <span class="d-darkreader-inline-block">Dark Reader</span> را غیرفعال کنید، سپس F5 بزنید.';
+          document.body.appendChild(warning);
+
+          var oldWarning = document.createElement("div");
+          oldWarning.className = "trk_irk";
+          oldWarning.textContent = "افزونه حذف تبلیغات یا فیلترشکن را در مرورگر غیرفعال کنید";
+          document.body.appendChild(oldWarning);
+
+          var kaprila = document.createElement("div");
+          kaprila.id = "kaprila_soft98_ir_related";
+          kaprila.textContent = "ad";
+          document.body.appendChild(kaprila);
+
+          var blockerNotice = document.createElement("aside");
+          blockerNotice.id = "PersianBlockerFreedomNotice";
+          blockerNotice.style.cssText = "position:fixed;top:0;left:0;right:0;height:72px";
+          blockerNotice.innerHTML = '<a href="https://github.com/MasterKia/PersianBlocker">هشدار از طرف لیست PersianBlocker: آزادی کاربران</a>';
+          document.body.appendChild(blockerNotice);
+
+          location.hash = encodeURIComponent("افزونه حذف ﺗﺒﻠﻴﻐﺎت یا VPN را غیرفعال کنید");
+          document.title = "افزونه حذف ﺗﺒﻠﻴﻐﺎت یا VPN را غیرفعال کنید - Soft98";
+        }, 50);
+
+        setTimeout(function () {
+          try {
+            eval(
+              'var antiBlockerMessage="افزونه حذف تبلیغات"; function makeWarning(){document.documentElement.setAttribute("data-soft98-patch-result","failed");return new Error("blocked")} function runDetector(){throw makeWarning()} runDetector(); document.documentElement.setAttribute("data-soft98-patch-result","passed");'
+            );
+          } catch (error) {
+            document.documentElement.setAttribute("data-soft98-patch-result", "failed-caught");
+          }
+
+          window.__results = {
+            href: link.getAttribute("href"),
+            dataHref: link.getAttribute("data-soft98-adblocker-href"),
+            target: link.getAttribute("target"),
+            onclick: link.getAttribute("onclick"),
+            state: link.getAttribute("data-soft98-adblocker-state"),
+            warnings: document.querySelectorAll(".tbd_ibd, .trk_irk, .tbdc").length,
+            blockerNotices: document.querySelectorAll("#PersianBlockerFreedomNotice, [id*='PersianBlocker']").length,
+            kaprila: document.querySelectorAll("#kaprila_soft98_ir_related, [id*='kaprila']").length,
+            hash: location.hash,
+            title: document.title,
+            patch: document.documentElement.getAttribute("data-soft98-patch-result"),
+            version: window.Soft98AdBlocker && window.Soft98AdBlocker.version,
+          };
+          document.querySelector("[data-proof='href']").textContent = link.getAttribute("href");
+          document.querySelector("[data-proof='warnings']").textContent = document.querySelectorAll(".tbd_ibd, .trk_irk, .tbdc").length;
+          document.querySelector("[data-proof='blocker-notices']").textContent =
+            document.querySelectorAll("#PersianBlockerFreedomNotice, [id*='PersianBlocker']").length;
+          document.querySelector("[data-proof='ads']").textContent = document.querySelectorAll("#kaprila_soft98_ir_related, [id*='kaprila']").length;
+          document.querySelector("[data-proof='patch']").textContent = document.documentElement.getAttribute("data-soft98-patch-result");
+        }, 350);
+      });
+    </script>
+  </head>
+  <body>
+    <main>
+      <h1>Soft98 Ad Blocker Proof Harness</h1>
+      <a class="download-list-link" href="https://soft98.ir/download/test-package">Download</a>
+      <div id="kaprila_soft98_ir_related" class="ad-slot">Kaprila ad placeholder should disappear</div>
+      <div id="stable-proof-container"><div class="dbdnone">safe probe placeholder</div></div>
+      <section class="proof" aria-label="proof">
+        <span>Download href: <strong data-proof="href">pending</strong></span>
+        <span>Warning nodes: <strong data-proof="warnings">pending</strong></span>
+        <span>External notices: <strong data-proof="blocker-notices">pending</strong></span>
+        <span>Ad nodes: <strong data-proof="ads">pending</strong></span>
+        <span>Patch hijack: <strong data-proof="patch">pending</strong></span>
+      </section>
+    </main>
+  </body>
+</html>

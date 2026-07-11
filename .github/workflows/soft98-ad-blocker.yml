@@ -1,0 +1,54 @@
+name: Soft98 Ad Blocker
+
+on:
+  push:
+    paths:
+      - "soft98-ad-blocker/**"
+      - "soft98_ad-blocker.user.js"
+      - ".github/workflows/soft98-ad-blocker.yml"
+  pull_request:
+    paths:
+      - "soft98-ad-blocker/**"
+      - "soft98_ad-blocker.user.js"
+      - ".github/workflows/soft98-ad-blocker.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build userscript
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: soft98-ad-blocker/package-lock.json
+
+      - name: Install dependencies
+        working-directory: soft98-ad-blocker
+        run: npm ci
+
+      - name: Build and syntax-check
+        working-directory: soft98-ad-blocker
+        run: npm run check
+
+      - name: Verify generated userscript is committed
+        run: |
+          if ! git diff --exit-code -- soft98_ad-blocker.user.js; then
+            echo "::error::soft98_ad-blocker.user.js is not up to date. Run npm run check in soft98-ad-blocker and commit the result."
+            exit 1
+          fi
+
+      - name: Upload userscript artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: soft98-ad-blocker.user.js
+          path: soft98_ad-blocker.user.js

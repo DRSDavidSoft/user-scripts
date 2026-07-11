@@ -1,0 +1,14 @@
+// ==UserScript==
+// @name         Soft98 Ad Blocker
+// @namespace    DRS David Soft <David@Refoua.me>
+// @author       David Refoua
+// @version      1.1.1
+// @description  Blocks Soft98 ads, patches Soft98 anti-adblock code, and preserves download links.
+// @run-at       document-start
+// @updateURL    https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-blocker.user.js
+// @downloadURL  https://raw.githubusercontent.com/DRSDavidSoft/user-scripts/master/soft98_ad-blocker.user.js
+// @icon         https://image.flaticon.com/icons/png/128/187/187130.png
+// @match        *://*.soft98.ir/*
+// @license      MIT
+// @grant        none
+// ==/UserScript==
