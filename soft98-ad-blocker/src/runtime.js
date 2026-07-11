@@ -26,7 +26,8 @@
   const savedHref = new WeakMap();
   const trackedLinks = new Set();
   const pendingRoots = new Set();
-  const stats = { adsRemoved: 0, warningsRemoved: 0, blockerNoticesRemoved: 0, linksPreserved: 0, linksRestored: 0, patches: [] };
+  const stats = { adsRemoved: 0, warningsRemoved: 0, blockerNoticesRemoved: 0, linksPreserved: 0, linksRestored: 0, patches: [], patchFailures: [] };
+  const eventLog = [];
   let scheduled = false;
   let recoveryStarted = false;
   let originalTitle = document.title || "";
@@ -119,6 +120,8 @@
 
   function log(level, message, detail) {
     if (!settings.diagnostics) return;
+    eventLog.push({ at: new Date().toISOString(), level, message, detail: detail || null });
+    if (eventLog.length > 80) eventLog.shift();
     safeConsole(
       level,
       "%cSoft98 Ad Blocker%c " + message,
@@ -128,14 +131,44 @@
     );
   }
 
-  function safeEval(source, thisArg) {
+  function safeEval(source, thisArg, fallbackSource) {
     if (typeof source !== "string") return source;
     try {
       if (nativeEval) return Function.prototype.call.call(nativeEval, thisArg || window, source);
     } catch (error) {
+      recordPatchFailure("native-eval", error, source);
       safeConsole("warn", "Soft98 Ad Blocker native eval failed; retrying indirectly", error);
     }
-    return (0, eval)(source);
+    try {
+      return (0, eval)(source);
+    } catch (error) {
+      recordPatchFailure("indirect-eval", error, source);
+      if (typeof fallbackSource === "string" && fallbackSource !== source) {
+        safeConsole("warn", "Soft98 Ad Blocker patched script failed; trying original source once", error);
+        return safeEval(fallbackSource, thisArg);
+      }
+      safeConsole("warn", "Soft98 Ad Blocker eval skipped invalid script instead of breaking the page", error);
+      return undefined;
+    }
+  }
+
+  function syntaxErrorFor(code) {
+    try {
+      Function(String(code || ""));
+      return null;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  function recordPatchFailure(stage, error, source) {
+    const entry = {
+      stage,
+      message: error && error.message ? error.message : String(error || "unknown error"),
+      preview: String(source || "").slice(0, 180),
+    };
+    stats.patchFailures.push(entry);
+    log("warn", "patch step skipped", entry);
   }
 
   function asElement(node) {
@@ -201,7 +234,32 @@
     const size = `${box.width}x${box.height}`;
     const firstPartyAdAsset = /img\.soft98\.ir\/(?:ads?|[0-9]+)\//i.test(src);
     const adSized = AD_SIZE.test(size);
-    return (firstPartyAdAsset && adSized) || (adSized && isExternalAdHref(href));
+    return (firstPartyAdAsset && adSized) || (adSized && isExternalAdHref(href)) || isGeneratedAdFamily(link, image);
+  }
+
+  function tokenList(node) {
+    if (!node) return [];
+    return [node.id || "", node.className || ""]
+      .join(" ")
+      .toLowerCase()
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+  }
+
+  function tokenStem(token) {
+    const match = token.match(/^(.+?)(?:[-_]*(?:link|url|href|image|img|banner|ad|ads|inner|download|box|item))$/i);
+    return match ? match[1] : token;
+  }
+
+  function isGeneratedAdFamily(link, image) {
+    if (!link || !image || !isExternalAdHref(link.href || link.getAttribute("href"))) return false;
+    const linkStems = new Set(tokenList(link).map(tokenStem).filter((token) => token.length >= 3));
+    const imageStems = tokenList(image).map(tokenStem).filter((token) => token.length >= 3);
+    for (const stem of imageStems) {
+      if (linkStems.has(stem) && /[a-z]/i.test(stem) && (/\d/.test(stem) || stem.length >= 5)) return true;
+    }
+    return false;
   }
 
   function adRemovalRoot(node) {
@@ -222,6 +280,7 @@
     link.setAttribute(DATA_HREF, href);
     link.setAttribute(DATA_STATE, "preserved");
     stats.linksPreserved += 1;
+    log("info", "preserved download link", { label: linkLabel(link), href });
     return true;
   }
 
@@ -233,6 +292,7 @@
       link.setAttribute("href", href);
       link.setAttribute(DATA_STATE, "restored");
       stats.linksRestored += 1;
+      log("warn", "restored sabotaged link", { label: linkLabel(link), href });
     }
     link.removeAttribute("onclick");
     link.removeAttribute("data-toggle");
@@ -306,6 +366,7 @@
       if (removable) {
         removable.remove();
         stats.adsRemoved += 1;
+        log("info", "removed ad surface", { tag: removable.tagName, id: removable.id || "", className: removable.className || "" });
       }
     }
   }
@@ -344,9 +405,11 @@
       if (isWarningNode(candidate)) {
         candidate.remove();
         stats.warningsRemoved += 1;
+        log("warn", "removed Soft98 warning node", { id: candidate.id || "", className: candidate.className || "" });
       } else if (isExternalBlockerNotice(candidate)) {
         candidate.remove();
         stats.blockerNoticesRemoved += 1;
+        log("warn", "removed external blocker notice", { id: candidate.id || "", className: candidate.className || "" });
       }
     }
     const hash = safeDecode(location.hash || "");
@@ -569,16 +632,28 @@
     const patches = [];
     const apply = (name, pattern, replacement) => {
       const next = code.replace(pattern, replacement);
-      if (next !== code) patches.push(name);
+      if (next === code) return;
+      const error = syntaxErrorFor(next);
+      if (error) {
+        recordPatchFailure(name, error, next);
+        return;
+      }
+      patches.push(name);
       code = next;
     };
-    apply("anti-adblock-warning-throws", /\bthrow\s+[A-Za-z_$][\w$]*\(\s*\)\s*;?/g, "return null;");
+    apply("anti-adblock-warning-throws", /\bthrow\s+[A-Za-z_$][\w$]*\(\s*\)\s*;?/g, "void 0;");
     apply("anti-adblock-reload-hook", /\blocation\.reload\s*=\s*[A-Za-z_$][\w$]*\s*;?/g, "void 0;");
     apply("anti-adblock-title-hash", /\b(?:location|[A-Za-z_$][\w$]*(?:\.get\(["']location["']\))?)\.hash\s*=\s*[^;]*replace\(\s*\/\\s\+\/g\s*,\s*["_']_["_']\s*\)\s*;?/g, "void 0;");
     apply("legacy-download-null-href", /\.setAttribute\(\s*["']href["']\s*,\s*[^;]*(?:location\.href|["']location\.href["'])[^;]*\)/g, "void 0");
-    code += `\n;try{window.dispatchEvent(new CustomEvent("soft98-ad-blocker:patched",{detail:{origin:${JSON.stringify(
+    const withEvent = `${code}\n;try{window.dispatchEvent(new CustomEvent("soft98-ad-blocker:patched",{detail:{origin:${JSON.stringify(
       origin || "eval"
     )},patches:${JSON.stringify(patches)}}}));}catch(_){}`;
+    const finalError = syntaxErrorFor(withEvent);
+    if (finalError) {
+      recordPatchFailure("final-validation", finalError, withEvent);
+      return syntaxErrorFor(code) ? source : code;
+    }
+    code = withEvent;
     if (patches.length) {
       stats.patches.push({ origin: origin || "eval", patches });
       log("info", "patched Soft98 application code", { origin, patches });
@@ -591,7 +666,7 @@
     if (window.__soft98AdBlockerEvalHijacked) return;
     window.__soft98AdBlockerEvalHijacked = true;
     window.eval = function patchedEval(source) {
-      if (typeof source === "string") return safeEval(patchSoft98Code(source, "eval"), this);
+      if (typeof source === "string") return safeEval(patchSoft98Code(source, "eval"), this, source);
       if (nativeEval) return Function.prototype.apply.call(nativeEval, this, arguments);
       return source;
     };
@@ -609,7 +684,7 @@
       .then((response) => (response.ok ? response.text() : ""))
       .then((text) => {
         if (!text) return;
-        safeEval(patchSoft98Code(text, src), window);
+        safeEval(patchSoft98Code(text, src), window, text);
       })
       .catch(() => {});
   }
@@ -683,7 +758,66 @@
     });
   }
 
+  function resetDocumentHandles() {
+    const proto = window.Document && window.Document.prototype;
+    if (!proto) return false;
+    let restored = 0;
+    for (const name of ["querySelector", "querySelectorAll", "getElementsByTagName", "getElementsByClassName", "getElementById"]) {
+      try {
+        if (typeof proto[name] === "function" && document[name] !== proto[name]) {
+          document[name] = proto[name];
+          restored += 1;
+        }
+      } catch (error) {
+        recordPatchFailure(`reset-document-${name}`, error, "");
+      }
+    }
+    log(restored ? "warn" : "info", "checked document query handles", { restored });
+    return restored > 0;
+  }
+
+  function trapCheck(nodes) {
+    const list = nodes ? [...nodes] : [...document.querySelectorAll("a[href], img, iframe, [id], [class]")].filter(isLikelyAdSurface);
+    const report = [];
+    for (const node of list) {
+      if (!node || !node.getBoundingClientRect) continue;
+      const style = getComputedStyle(node);
+      const box = visibleBox(node);
+      const trips = [];
+      if (style.display === "none") trips.push("display none");
+      if (/hidden|collapse/i.test(style.visibility)) trips.push("not visible");
+      if (Number(style.opacity) < 1) trips.push("opacity reduced");
+      if (style.transform && style.transform !== "none") trips.push("transformed");
+      if (box.width < 15 || box.height < 15) trips.push("too small");
+      if (/adguard|adblock/i.test(`${style.content || ""} ${node.getAttribute("style") || ""}`)) trips.push("blocker marker");
+      if (node.tagName === "IMG" && !node.getAttribute("src")) trips.push("source-less image");
+      if (trips.length) report.push({ node, trips, box });
+    }
+    safeConsole("groupCollapsed", `Soft98 Ad Blocker trap check: ${report.length} suspicious node(s)`);
+    for (const item of report) safeConsole("warn", item.node, item.trips, item.box);
+    safeConsole("groupEnd");
+    return report;
+  }
+
+  function diagnosticReport() {
+    const report = {
+      version: VERSION,
+      settings: { ...settings },
+      stats: { ...stats, patches: [...stats.patches], patchFailures: [...stats.patchFailures] },
+      trackedLinks: [...trackedLinks].filter((link) => document.contains(link)).map((link) => ({
+        label: linkLabel(link),
+        href: link.getAttribute("href") || "",
+        preserved: link.getAttribute(DATA_HREF) || "",
+        state: link.getAttribute(DATA_STATE) || "",
+      })),
+      events: [...eventLog],
+    };
+    safeConsole("info", "Soft98 Ad Blocker diagnostics", report);
+    return report;
+  }
+
   function init() {
+    resetDocumentHandles();
     installEvalHijack();
     installScriptHijack();
     installStyle();
@@ -706,7 +840,10 @@
       return { ...settings };
     },
     get stats() {
-      return { ...stats, patches: [...stats.patches] };
+      return { ...stats, patches: [...stats.patches], patchFailures: [...stats.patchFailures] };
+    },
+    get events() {
+      return [...eventLog];
     },
     configure: (next) => writeSettings({ ...settings, ...next }),
     openPanel: () => {
@@ -716,6 +853,10 @@
     },
     patchSoft98Code,
     unpackDeanEdwards,
+    diagnostics: diagnosticReport,
+    report: diagnosticReport,
+    trapCheck,
+    resetHandles: resetDocumentHandles,
     scan: () => schedule(document),
     restoreLinks: () => {
       for (const link of trackedLinks) restoreLink(link);

@@ -116,6 +116,14 @@
             document.documentElement.setAttribute("data-soft98-patch-result", "failed-caught");
           }
 
+          try {
+            eval(
+              'var antiBlockerMessage="افزونه حذف تبلیغات"; function topLevelWarning(){document.documentElement.setAttribute("data-soft98-top-level-patch","failed");return new Error("blocked")} throw topLevelWarning(); document.documentElement.setAttribute("data-soft98-top-level-patch","passed");'
+            );
+          } catch (error) {
+            document.documentElement.setAttribute("data-soft98-top-level-patch", "failed-caught");
+          }
+
           window.__results = {
             href: link.getAttribute("href"),
             dataHref: link.getAttribute("data-soft98-adblocker-href"),
@@ -128,6 +136,7 @@
             hash: location.hash,
             title: document.title,
             patch: document.documentElement.getAttribute("data-soft98-patch-result"),
+            topLevelPatch: document.documentElement.getAttribute("data-soft98-top-level-patch"),
             version: window.Soft98AdBlocker && window.Soft98AdBlocker.version,
           };
           document.querySelector("[data-proof='href']").textContent = link.getAttribute("href");
@@ -136,6 +145,8 @@
             document.querySelectorAll("#PersianBlockerFreedomNotice, [id*='PersianBlocker']").length;
           document.querySelector("[data-proof='ads']").textContent = document.querySelectorAll("#kaprila_soft98_ir_related, [id*='kaprila']").length;
           document.querySelector("[data-proof='patch']").textContent = document.documentElement.getAttribute("data-soft98-patch-result");
+          document.querySelector("[data-proof='top-level-patch']").textContent =
+            document.documentElement.getAttribute("data-soft98-top-level-patch");
         }, 350);
       });
     </script>
@@ -152,6 +163,7 @@
         <span>External notices: <strong data-proof="blocker-notices">pending</strong></span>
         <span>Ad nodes: <strong data-proof="ads">pending</strong></span>
         <span>Patch hijack: <strong data-proof="patch">pending</strong></span>
+        <span>Top-level throw: <strong data-proof="top-level-patch">pending</strong></span>
       </section>
     </main>
   </body>

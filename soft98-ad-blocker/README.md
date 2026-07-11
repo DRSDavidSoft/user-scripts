@@ -21,5 +21,6 @@ The build uses `src/meta.txt` and `src/runtime.js`, then writes the single minif
 - Optional Soft98 Pro panel with modern dark design, badges, diagnostics, pirate logo, and success-only taunt
 - PersianBlocker/MasterKia external notice removal, tested separately from Soft98's own warning removals
 - Browser extension recommendation after a successful cleanup; the extension is the preferred install for richer controls
+- Console diagnostics via `window.Soft98AdBlocker.report()`, `trapCheck()`, `resetHandles()`, `events`, and `stats`
 
 Avoid relying on generated Soft98 class names, IDs, or mutable message keys. Prefer behavior and structure.
