@@ -6,7 +6,7 @@
   const DATA_STATE = "data-soft98-adblocker-state";
   const DATA_PATCHED = "data-soft98-adblocker-patched-script";
   const enqueueMicrotask = window.queueMicrotask ? window.queueMicrotask.bind(window) : (callback) => Promise.resolve().then(callback);
-  const nativeEval = window.eval;
+  const nativeEval = typeof window.eval === "function" ? window.eval : null;
   const nativeFetch = window.fetch ? window.fetch.bind(window) : null;
   const STORAGE_KEY = "soft98-ad-blocker.settings";
   const PIRATE_LOGO = "https://user-images.githubusercontent.com/4673812/50543067-1f2b7680-0be1-11e9-9daa-92828b24448e.png";
@@ -99,16 +99,43 @@
 
   function writeSettings(next) {
     settings = { ...DEFAULT_SETTINGS, ...next };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (error) {
+      safeConsole("warn", "Soft98 Ad Blocker could not persist settings", error);
+    }
     installProStyle();
     renderControlPanel();
     schedule(document);
   }
 
+  function safeConsole(level, ...args) {
+    try {
+      const target = typeof console === "object" && console ? console : null;
+      const method = target && typeof target[level] === "function" ? target[level] : target && typeof target.log === "function" ? target.log : null;
+      if (method) Function.prototype.apply.call(method, target, args);
+    } catch (_error) {}
+  }
+
   function log(level, message, detail) {
     if (!settings.diagnostics) return;
-    const method = console[level] || console.log;
-    method.call(console, "%cSoft98 Ad Blocker%c " + message, "background:#101820;color:#92e6a7;padding:2px 6px;border-radius:5px;font-weight:700", "color:#9fb3c8", detail || "");
+    safeConsole(
+      level,
+      "%cSoft98 Ad Blocker%c " + message,
+      "background:#101820;color:#92e6a7;padding:2px 6px;border-radius:5px;font-weight:700",
+      "color:#9fb3c8",
+      detail || ""
+    );
+  }
+
+  function safeEval(source, thisArg) {
+    if (typeof source !== "string") return source;
+    try {
+      if (nativeEval) return Function.prototype.call.call(nativeEval, thisArg || window, source);
+    } catch (error) {
+      safeConsole("warn", "Soft98 Ad Blocker native eval failed; retrying indirectly", error);
+    }
+    return (0, eval)(source);
   }
 
   function asElement(node) {
@@ -482,7 +509,8 @@
     successAnnounced = true;
     log("info", "boarded successfully", { ...stats });
     if (settings.taunt) {
-      console.info(
+      safeConsole(
+        "info",
         "%cSoft98 Ad Blocker%c The page kept its content. The ads did not. Challenge accepted with clean instruments.",
         "background:#70e1b2;color:#06120c;padding:4px 8px;border-radius:6px;font-weight:800",
         "color:#9db1c6"
@@ -526,7 +554,7 @@
     if (!/^eval\s*\(\s*function\s*\(\s*p\s*,\s*a\s*,\s*c\s*,\s*k\s*,\s*e\s*,\s*r\s*\)/.test(trimmed)) return trimmed;
     const inner = trimmed.replace(/^eval\s*\(/, "").replace(/\)\s*;?\s*$/, "");
     try {
-      const unpacked = nativeEval(`(${inner})`);
+      const unpacked = safeEval(`(${inner})`, window);
       return typeof unpacked === "string" ? unpacked : trimmed;
     } catch (_error) {
       return trimmed;
@@ -563,8 +591,9 @@
     if (window.__soft98AdBlockerEvalHijacked) return;
     window.__soft98AdBlockerEvalHijacked = true;
     window.eval = function patchedEval(source) {
-      if (typeof source === "string") return nativeEval.call(this, patchSoft98Code(source, "eval"));
-      return nativeEval.apply(this, arguments);
+      if (typeof source === "string") return safeEval(patchSoft98Code(source, "eval"), this);
+      if (nativeEval) return Function.prototype.apply.call(nativeEval, this, arguments);
+      return source;
     };
   }
 
@@ -580,7 +609,7 @@
       .then((response) => (response.ok ? response.text() : ""))
       .then((text) => {
         if (!text) return;
-        nativeEval.call(window, patchSoft98Code(text, src));
+        safeEval(patchSoft98Code(text, src), window);
       })
       .catch(() => {});
   }

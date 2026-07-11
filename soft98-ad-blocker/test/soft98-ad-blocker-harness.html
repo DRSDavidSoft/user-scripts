@@ -64,6 +64,8 @@
           diagnostics: true,
         })
       );
+      window.__soft98HarnessConsoleInfo = console.info;
+      console.info = undefined;
     </script>
     <script src="../../soft98_ad-blocker.user.js"></script>
     <script>
